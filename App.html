@@ -1,0 +1,244 @@
+<script>
+var SESSION_KEY = 'ggl_session_token';
+var DEFAULT_VISIBLE = {
+  'no':1,'company_name':1,'pks_mill_internal_name':1,'stockpile':1,
+  'supplier_lama_baru':1,'supplier_lama_supplier_baru':1,'jenis_supplier':1,
+  'status':1,'ann_est_production_palm_shell_in_mt':1,
+  'qty_terkirim_kg':1,'qty_pengiriman_kg':1,'qty_kirim_kg':1,
+  'sustainability_certificate':1,'type_of_processing':1,'address':1
+};
+var ICONS = {
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>'
+};
+var state = { token:'', sites:[], schema:[], records:[], currentSite:'', currentYear:'', searchTimer:null, visibleCols: DEFAULT_VISIBLE };
+
+document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.col-toggle-wrap')) {
+    var m = document.getElementById('colMenu');
+    if (m) m.classList.remove('open');
+  }
+});
+
+function getToken() { return localStorage.getItem(SESSION_KEY) || ''; }
+function redirectToLogin() {
+  localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem('ggl_session_user');
+  google.script.run.withSuccessHandler(function(url) { window.top.location.href = url; }).getAppUrl();
+}
+
+function init() {
+  state.token = getToken();
+  if (!state.token) { redirectToLogin(); return; }
+  showLoading(true);
+  google.script.run
+    .withSuccessHandler(function(data) {
+      document.getElementById('userEmail').textContent = data.userEmail;
+      document.getElementById('userAvatar').textContent = (data.userName || data.userEmail).charAt(0).toUpperCase();
+      state.sites = data.sites;
+      state.currentSite = data.defaultSite;
+      state.currentYear = data.defaultYear;
+      renderSiteTabs();
+      loadDashboard();
+    })
+    .withFailureHandler(function(err) {
+      if ((err.message||'').indexOf('SESSION_EXPIRED') >= 0) redirectToLogin();
+      else handleError(err);
+    })
+    .getInitialData(state.token);
+}
+
+function handleLogout() {
+  google.script.run.withSuccessHandler(redirectToLogin).withFailureHandler(redirectToLogin).apiLogout(state.token);
+}
+function showLoading(s) { document.getElementById('loading').classList.toggle('show', s); }
+function handleError(err) {
+  showLoading(false);
+  if ((err.message||'').indexOf('SESSION_EXPIRED') >= 0) { redirectToLogin(); return; }
+  alert('Error: ' + (err.message || err));
+}
+
+function renderSiteTabs() {
+  document.getElementById('siteTabs').innerHTML = state.sites.map(function(s) {
+    return '<button class="tab' + (s.id === state.currentSite ? ' active' : '') + '" onclick="switchSite(\'' + s.id + '\')">' + esc(s.name) + '</button>';
+  }).join('');
+}
+function switchSite(id) { state.currentSite = id; renderSiteTabs(); loadDashboard(); }
+
+function getFilters() {
+  return {
+    search: document.getElementById('searchInput').value.trim(),
+    certFilter: document.getElementById('filterCert').value,
+    supplierFilter: document.getElementById('filterSupplier').value
+  };
+}
+
+function loadDashboard() {
+  showLoading(true);
+  var site = state.sites.find(function(s) { return s.id === state.currentSite; });
+  document.getElementById('pageTitle').textContent = (site ? site.name : state.currentSite) + ' – ' + state.currentYear;
+  document.getElementById('breadcrumbSite').textContent = site ? site.name : state.currentSite;
+  google.script.run
+    .withSuccessHandler(function(data) {
+      state.schema = data.schema;
+      state.records = data.records;
+      var sel = document.getElementById('yearSelect');
+      sel.innerHTML = (data.years.length ? data.years : ['2024','2025','2026']).map(function(y) {
+        return '<option value="' + y + '"' + (y === state.currentYear ? ' selected' : '') + '>' + y + '</option>';
+      }).join('');
+      sel.onchange = function() { state.currentYear = sel.value; loadDashboard(); };
+      document.getElementById('statTotal').textContent = data.analytics.totalSuppliers;
+      document.getElementById('statStockpiles').textContent = data.analytics.stockpiles;
+      document.getElementById('statUncertified').textContent = data.analytics.uncertified;
+      document.getElementById('statNew').textContent = data.analytics.newSuppliers;
+      document.getElementById('rowCount').textContent = data.records.length + ' rows · table view matches export';
+      renderColMenu(data.schema);
+      renderTable(data.records, getVisibleFields(data.schema));
+      showLoading(false);
+    })
+    .withFailureHandler(handleError)
+    .apiGetDashboard(state.token, state.currentSite, state.currentYear, getFilters());
+}
+
+function getVisibleFields(schema) {
+  return schema.filter(function(f) {
+    return ['id','site','year','updated_at'].indexOf(f.key) === -1 && state.visibleCols[f.key];
+  });
+}
+function renderColMenu(schema) {
+  var fields = schema.filter(function(f) { return ['id','site','year','updated_at'].indexOf(f.key) === -1; });
+  document.getElementById('colMenu').innerHTML = fields.map(function(f) {
+    return '<label><input type="checkbox" ' + (state.visibleCols[f.key] ? 'checked' : '') +
+      ' onchange="toggleCol(\'' + f.key + '\', this.checked)"> ' + esc(f.label) + '</label>';
+  }).join('');
+}
+function toggleCol(key, visible) {
+  if (visible) state.visibleCols[key] = 1; else delete state.visibleCols[key];
+  renderTable(state.records, getVisibleFields(state.schema));
+}
+function toggleColMenu(e) { e.stopPropagation(); document.getElementById('colMenu').classList.toggle('open'); }
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function supplierType(r) { return r.supplier_lama_baru || r.supplier_lama_supplier_baru || r.jenis_supplier || ''; }
+function certPill(v) {
+  var l = (v||'').toLowerCase();
+  if (!l || l.indexOf('none') >= 0 || l === 'no data' || l === '-') return '<span class="pill pill-red">NO CERT</span>';
+  if (l.indexOf('rspo') >= 0 || l.indexOf('ispo') >= 0 || l.indexOf('mspo') >= 0) return '<span class="pill pill-green">' + esc(v) + '</span>';
+  return '<span class="pill pill-amber">' + esc(v) + '</span>';
+}
+function supplierPill(v) {
+  if (!v) return '<span class="pill pill-grey">—</span>';
+  return '<span class="pill ' + (v.toLowerCase().indexOf('baru') >= 0 ? 'pill-amber' : 'pill-green') + '">' + esc(v) + '</span>';
+}
+function renderCell(f, r) {
+  var v = r[f.key] || '';
+  if (f.key === 'company_name') return '<div class="cell-company">' + esc(v) + '</div>' + (r.no ? '<div class="cell-sub">#' + esc(r.no) + '</div>' : '');
+  if (f.key === 'pks_mill_internal_name') return '<div class="cell-mill">' + esc(v) + '</div>';
+  if (f.key === 'address') return v ? '<div class="cell-truncate">' + esc(v) + '</div>' : '<span class="pill pill-grey">—</span>';
+  if (f.key === 'sustainability_certificate') return certPill(v);
+  if (f.key.indexOf('supplier') >= 0 || f.key === 'jenis_supplier') return supplierPill(supplierType(r));
+  if (f.key.indexOf('qty') >= 0) return v ? '<span class="cell-num">' + esc(v) + '</span>' : '<span class="pill pill-grey">—</span>';
+  return v ? esc(v) : '<span style="color:var(--text-tertiary)">—</span>';
+}
+function renderTable(records, fields) {
+  if (!fields.length) {
+    document.getElementById('tableHead').innerHTML = '';
+    document.getElementById('tableBody').innerHTML = '<tr><td><div class="empty-state"><p>Select columns to display</p></div></td></tr>';
+    return;
+  }
+  document.getElementById('tableHead').innerHTML = '<tr><th class="th-actions">Actions</th>' +
+    fields.map(function(f,i) { return '<th class="' + (i===0?'th-pinned':'') + '">' + esc(f.label) + '</th>'; }).join('') + '</tr>';
+  if (!records.length) {
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="' + (fields.length+1) + '"><div class="empty-state"><p>No suppliers found</p></div></td></tr>';
+    return;
+  }
+  document.getElementById('tableBody').innerHTML = records.map(function(r) {
+    var actions = '<td class="td-actions"><div class="actions-group">' +
+      '<button class="btn-icon" onclick="editRecord(\'' + r.id + '\')">' + ICONS.edit + '</button>' +
+      '<button class="btn-icon danger" onclick="deleteRecord(\'' + r.id + '\')">' + ICONS.trash + '</button></div></td>';
+    var cells = fields.map(function(f,i) {
+      return '<td class="' + (i===0?'td-pinned':'') + '">' + renderCell(f,r) + '</td>';
+    }).join('');
+    return '<tr>' + actions + cells + '</tr>';
+  }).join('');
+}
+
+function debounceSearch() { clearTimeout(state.searchTimer); state.searchTimer = setTimeout(loadDashboard, 280); }
+
+function openRecordModal(record) {
+  document.getElementById('modalTitle').textContent = record ? 'Edit Supplier' : 'Add Supplier';
+  document.getElementById('recordId').value = record ? record.id : '';
+  var fields = state.schema.filter(function(f) { return ['id','site','year','updated_at'].indexOf(f.key) === -1; });
+  document.getElementById('formFields').innerHTML = fields.map(function(f) {
+    var val = record ? (record[f.key] || '') : '';
+    var full = ['address','person_in_charge','location'].indexOf(f.key) >= 0 ? ' full' : '';
+    if (f.type === 'select' && f.options) {
+      var opts = f.options.map(function(o) { return '<option value="' + esc(o) + '"' + (val===o?' selected':'') + '>' + esc(o) + '</option>'; }).join('');
+      return '<div class="form-group' + full + '"><label>' + esc(f.label) + '</label><select id="field_' + f.key + '"><option value="">—</option>' + opts + '</select></div>';
+    }
+    if (f.key === 'address' || f.key === 'person_in_charge') {
+      return '<div class="form-group full"><label>' + esc(f.label) + '</label><textarea id="field_' + f.key + '" rows="2">' + esc(val) + '</textarea></div>';
+    }
+    return '<div class="form-group' + full + '"><label>' + esc(f.label) + '</label><input type="text" id="field_' + f.key + '" value="' + esc(val) + '"></div>';
+  }).join('');
+  document.getElementById('recordModal').classList.add('open');
+}
+function closeRecordModal() { document.getElementById('recordModal').classList.remove('open'); }
+function editRecord(id) { var r = state.records.find(function(x){return x.id===id;}); if(r) openRecordModal(r); }
+function saveRecord(e) {
+  e.preventDefault(); showLoading(true);
+  var record = { id: document.getElementById('recordId').value, site: state.currentSite, year: state.currentYear };
+  state.schema.forEach(function(f) { var el = document.getElementById('field_' + f.key); if (el) record[f.key] = el.value; });
+  google.script.run.withSuccessHandler(function(){ closeRecordModal(); loadDashboard(); }).withFailureHandler(handleError).apiSaveRecord(state.token, record);
+}
+function deleteRecord(id) {
+  if (!confirm('Hapus supplier ini?')) return;
+  showLoading(true);
+  google.script.run.withSuccessHandler(loadDashboard).withFailureHandler(handleError).apiDeleteRecord(state.token, id);
+}
+function openSiteModal() { document.getElementById('siteModal').classList.add('open'); }
+function closeSiteModal() { document.getElementById('siteModal').classList.remove('open'); }
+function addSite(e) {
+  e.preventDefault(); showLoading(true);
+  google.script.run.withSuccessHandler(function(site) {
+    state.sites.push(site); state.currentSite = site.id; closeSiteModal(); renderSiteTabs(); loadDashboard();
+  }).withFailureHandler(handleError).apiAddSite(state.token, document.getElementById('newSiteId').value, document.getElementById('newSiteName').value, document.getElementById('newSiteDesc').value);
+}
+function openImportModal() { document.getElementById('importModal').classList.add('open'); }
+function closeImportModal() { document.getElementById('importModal').classList.remove('open'); }
+function runImport() {
+  var json = document.getElementById('importJson').value.trim();
+  if (!json) { alert('Paste JSON terlebih dahulu.'); return; }
+  showLoading(true);
+  google.script.run.withSuccessHandler(function(res) {
+    alert('Import berhasil: ' + res.imported + ' rows'); closeImportModal();
+    google.script.run.withSuccessHandler(function(d){ state.sites=d.sites; renderSiteTabs(); loadDashboard(); }).getInitialData(state.token);
+  }).withFailureHandler(handleError).apiImportSeed(state.token, json);
+}
+function runSeedFromScript() {
+  showLoading(true);
+  google.script.run.withSuccessHandler(function(res) {
+    alert('Seed loaded: ' + res.imported + ' rows'); closeImportModal();
+    google.script.run.withSuccessHandler(function(d){ state.sites=d.sites; renderSiteTabs(); loadDashboard(); }).getInitialData(state.token);
+  }).withFailureHandler(handleError).apiRunSeedImport(state.token);
+}
+function exportCsv() {
+  showLoading(true);
+  google.script.run.withSuccessHandler(function(csv) {
+    showLoading(false);
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+    a.download = 'supplier_' + state.currentSite + '_' + state.currentYear + '.csv';
+    a.click();
+  }).withFailureHandler(handleError).apiExportCsv(state.token, state.currentSite, state.currentYear, getFilters());
+}
+function exportPdf() {
+  showLoading(true);
+  google.script.run.withSuccessHandler(function(html) {
+    showLoading(false);
+    var w = window.open('', '_blank'); w.document.write(html); w.document.close();
+    setTimeout(function(){ w.print(); }, 500);
+  }).withFailureHandler(handleError).apiGeneratePdf(state.token, state.currentSite, state.currentYear, getFilters());
+}
+</script>

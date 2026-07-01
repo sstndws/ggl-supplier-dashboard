@@ -1,0 +1,394 @@
+/* Ported from sustain-dashboard — Mill Registry table system */
+
+.registry-table-card {
+  background: #fff;
+  border: 1px solid rgba(139, 26, 26, 0.09);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(139, 26, 26, 0.06);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.registry-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(74, 28, 28, 0.06);
+}
+
+.registry-table-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a0a0a;
+  letter-spacing: -0.01em;
+}
+
+.registry-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(74, 28, 28, 0.06);
+  background: #fdfafa;
+  position: relative;
+  z-index: 30;
+}
+
+.registry-search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #2a1010;
+  outline: none;
+}
+
+.registry-search-bar input::placeholder {
+  color: #b09a9a;
+}
+
+.registry-search-icon {
+  color: #9c8a8a;
+  flex-shrink: 0;
+}
+
+.registry-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(74, 28, 28, 0.06);
+  background: #fdfafa;
+  position: relative;
+  z-index: 30;
+}
+
+.registry-toolbar select {
+  height: 34px;
+  border: 1px solid rgba(139, 26, 26, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  padding: 0 10px;
+  font-size: 12.5px;
+  color: #5a3030;
+}
+
+.registry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(139, 26, 26, 0.18);
+  background: #fff;
+  color: #5a3030;
+  transition: all 0.15s;
+}
+
+.registry-btn:hover {
+  background: rgba(139, 26, 26, 0.05);
+  border-color: rgba(139, 26, 26, 0.32);
+  color: #8b1a1a;
+}
+
+.registry-btn--primary {
+  background: #8b1a1a;
+  border-color: #8b1a1a;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(139, 26, 26, 0.2);
+}
+
+.registry-btn--primary:hover {
+  background: #6d1414;
+  color: #fff;
+}
+
+.registry-btn--export {
+  color: #8b1a1a;
+  border-color: rgba(139, 26, 26, 0.28);
+}
+
+.registry-scope-label {
+  margin-left: auto;
+  font-size: 12px;
+  color: #9c8a8a;
+  white-space: nowrap;
+}
+
+.registry-table-scroll {
+  overflow: auto;
+  max-height: min(65vh, calc(100dvh - 280px));
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 26, 26, 0.18) transparent;
+}
+
+.registry-table-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+table.supplier-registry-table {
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+table.supplier-registry-table thead th.mill-th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  vertical-align: top;
+  padding: 10px 12px 9px;
+  background-color: #faf6f6;
+  background-image: linear-gradient(180deg, #f3eaea 0%, #faf6f6 100%);
+  border-bottom: 1px solid rgba(139, 26, 26, 0.12);
+  box-shadow: 0 1px 0 rgba(139, 26, 26, 0.1);
+}
+
+table.supplier-registry-table .mill-th-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  min-height: 40px;
+  padding-right: 4px;
+}
+
+table.supplier-registry-table .mill-th-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #3d1818;
+  line-height: 1.3;
+  white-space: normal;
+}
+
+table.supplier-registry-table tbody td.mill-td {
+  vertical-align: top;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #2a1010;
+  background: #fff;
+  border-bottom: 1px solid rgba(74, 28, 28, 0.05);
+}
+
+table.supplier-registry-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+table.supplier-registry-table tbody tr.mill-row-clickable:hover td {
+  background: #fdf8f8;
+}
+
+table.supplier-registry-table tbody tr.mill-row-clickable {
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+table.supplier-registry-table tbody tr.mill-row-clickable:active td {
+  background: #faf0f0;
+}
+
+table.supplier-registry-table .mill-th--company,
+table.supplier-registry-table .mill-td--company {
+  min-width: 148px;
+  width: 148px;
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: #fff;
+  box-shadow: 2px 0 8px rgba(74, 28, 28, 0.04);
+}
+
+table.supplier-registry-table thead th.mill-th--company {
+  z-index: 6;
+  background-color: #faf6f6;
+  background-image: linear-gradient(180deg, #f3eaea 0%, #faf6f6 100%);
+}
+
+table.supplier-registry-table tbody tr.mill-row-clickable:hover td.mill-td--company {
+  background: #fdf8f8;
+}
+
+table.supplier-registry-table .mill-th--mill,
+table.supplier-registry-table .mill-td--mill { min-width: 156px; width: 156px; }
+table.supplier-registry-table .mill-th--stock,
+table.supplier-registry-table .mill-td--stock { min-width: 104px; width: 104px; white-space: nowrap; }
+table.supplier-registry-table .mill-th--supplier,
+table.supplier-registry-table .mill-td--supplier { min-width: 118px; width: 118px; white-space: nowrap; }
+table.supplier-registry-table .mill-th--cert,
+table.supplier-registry-table .mill-td--cert { min-width: 130px; width: 130px; }
+table.supplier-registry-table .mill-th--status,
+table.supplier-registry-table .mill-td--status { min-width: 120px; width: 120px; }
+table.supplier-registry-table .mill-th--qty,
+table.supplier-registry-table .mill-td--qty { min-width: 118px; width: 118px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+table.supplier-registry-table .mill-th--text,
+table.supplier-registry-table .mill-td--text { min-width: 132px; width: 132px; }
+table.supplier-registry-table .mill-th--wide,
+table.supplier-registry-table .mill-td--wide { min-width: 180px; width: 180px; }
+
+table.supplier-registry-table .mill-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-weight: 600;
+  color: #1a0a0a;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+table.supplier-registry-table .mill-id {
+  margin-top: 3px;
+  font-size: 10.5px;
+  color: #9c8080;
+  line-height: 1.3;
+}
+
+table.supplier-registry-table .mill-cell-wrap {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  word-break: break-word;
+  line-height: 1.45;
+}
+
+/* Badges — sustain-dashboard */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.status-badge.s-active { background: rgba(22, 113, 62, 0.1); color: #16713e; }
+.status-badge.s-review { background: rgba(160, 96, 0, 0.1); color: #a06000; }
+.status-badge.s-pending { background: rgba(139, 26, 26, 0.1); color: #8b1a1a; }
+.status-badge.s-danger { background: rgba(192, 57, 43, 0.1); color: #c0392b; }
+
+.mill-rrl { display: inline-flex; align-items: center; vertical-align: middle; }
+.mill-rrl--empty { color: #ccc; font-weight: 500; }
+
+.mill-rrl-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 14px;
+  border-radius: 999px;
+  min-height: 24px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  overflow: hidden;
+  box-shadow:
+    inset 4px 0 7px rgba(255, 255, 255, 0.42),
+    inset -4px 0 7px rgba(255, 255, 255, 0.28),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.mill-rrl-pill__sheen {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0) 22%),
+    linear-gradient(270deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 18%);
+  mix-blend-mode: soft-light;
+  opacity: 0.92;
+}
+
+.mill-rrl-pill__lbl { position: relative; z-index: 1; }
+
+.mill-rrl--high .mill-rrl-pill {
+  background: linear-gradient(180deg, #ff8a7e 0%, #ef3a32 42%, #b81410 100%);
+  color: #3a0606;
+}
+.mill-rrl--medium .mill-rrl-pill {
+  background: linear-gradient(180deg, #ffe566 0%, #ffd020 38%, #e0a000 100%);
+  color: #5a3800;
+}
+.mill-rrl--low .mill-rrl-pill {
+  background: linear-gradient(180deg, #8ee9a4 0%, #38d06a 40%, #159040 100%);
+  color: #063d18;
+}
+.mill-rrl--other .mill-rrl-pill {
+  background: linear-gradient(180deg, #e8e0e0 0%, #c8b8b8 100%);
+  color: #4a3030;
+}
+
+.registry-col-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 280px;
+  max-height: 320px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid rgba(139, 26, 26, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(74, 28, 28, 0.16);
+  z-index: 50;
+  padding: 8px;
+}
+
+.registry-col-menu label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.registry-col-menu label:hover {
+  background: #faf5f5;
+}
+
+.registry-action-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(139, 26, 26, 0.15);
+  border-radius: 7px;
+  background: #fff;
+  color: #7a4a4a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.registry-action-btn:hover {
+  background: rgba(139, 26, 26, 0.06);
+  color: #8b1a1a;
+}
+
+.registry-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: #9c8a8a;
+  font-size: 14px;
+}

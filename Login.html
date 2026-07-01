@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --maroon: #7B1E1E;
+      --maroon-dark: #5C1515;
+      --bg: #F3EDE6;
+      --card: #FFFFFF;
+      --text: #1A1A1A;
+      --muted: #8A8580;
+      --border: #E5DFD8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+    }
+
+    .back-link {
+      position: absolute;
+      top: 24px;
+      left: 32px;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .back-link:hover { color: var(--maroon); }
+
+    .login-card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,.04);
+      width: 100%;
+      max-width: 420px;
+      padding: 36px 40px 40px;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .logo-hex {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .brand-text .dept {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .tagline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: 15px;
+      color: var(--maroon);
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 28px;
+    }
+
+    .signin-title {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 28px;
+      font-weight: 400;
+      margin-bottom: 6px;
+    }
+
+    .signin-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .form-group { margin-bottom: 20px; }
+
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--card);
+      transition: border-color .15s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--maroon);
+    }
+
+    .btn-signin {
+      width: 100%;
+      padding: 13px;
+      background: var(--maroon);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background .15s;
+    }
+    .btn-signin:hover { background: var(--maroon-dark); }
+    .btn-signin:disabled { opacity: .6; cursor: not-allowed; }
+
+    .error-msg {
+      display: none;
+      background: #FDECEC;
+      color: #C62828;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .error-msg.show { display: block; }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .loading.show { display: block; }
+  </style>
+</head>
+<body>
+  <a href="#" class="back-link" onclick="return false;">← Back to Sustainability Hub Portal</a>
+
+  <div class="login-card">
+    <div class="brand-row">
+      <svg class="logo-hex" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22 2L38 11V33L22 42L6 33V11L22 2Z" fill="#7B1E1E"/>
+        <path d="M22 10L30 15V29L22 34L14 29V15L22 10Z" fill="white" fill-opacity="0.9"/>
+        <text x="22" y="26" text-anchor="middle" fill="#7B1E1E" font-size="10" font-weight="700" font-family="Inter,sans-serif">GGL</text>
+      </svg>
+      <div class="brand-text">
+        <h1>GGL DASHBOARD</h1>
+        <div class="dept">DOWNSTREAM — SUSTAINABILITY</div>
+      </div>
+    </div>
+
+    <p class="tagline">Sustainable Supply. Responsible Refining.</p>
+    <div class="divider"></div>
+
+    <h2 class="signin-title">Sign in</h2>
+    <p class="signin-sub">Use your authorized account to access the GGL Dashboard.</p>
+
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="loading" id="loading">Signing in…</div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="email">EMAIL ADDRESS</label>
+        <input type="email" id="email" name="email" placeholder="you@company.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="password">PASSWORD</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-signin" id="submitBtn">Sign in</button>
+    </form>
+  </div>
+
+  <script>
+    var SESSION_KEY = 'ggl_session_token';
+    var SESSION_USER_KEY = 'ggl_session_user';
+
+    // Redirect if already logged in
+    (function checkExisting() {
+      var token = localStorage.getItem(SESSION_KEY);
+      if (!token) return;
+      google.script.run
+        .withSuccessHandler(function(session) {
+          if (session) redirectToApp();
+        })
+        .withFailureHandler(function() {})
+        .validateSession(token);
+    })();
+
+    function redirectToApp() {
+      google.script.run
+        .withSuccessHandler(function(url) {
+          window.top.location.href = url + '?page=app';
+        })
+        .getAppUrl();
+    }
+
+    function showError(msg) {
+      var el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      document.getElementById('errorMsg').classList.remove('show');
+      document.getElementById('loading').classList.add('show');
+      document.getElementById('submitBtn').disabled = true;
+
+      var email = document.getElementById('email').value;
+      var password = document.getElementById('password').value;
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          localStorage.setItem(SESSION_KEY, result.token);
+          localStorage.setItem(SESSION_USER_KEY, JSON.stringify(result.user));
+          redirectToApp();
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('loading').classList.remove('show');
+          document.getElementById('submitBtn').disabled = false;
+          showError(err.message || 'Login gagal. Periksa email dan password.');
+        })
+        .login(email, password);
+    }
+  </script>
+</body>
+</html>

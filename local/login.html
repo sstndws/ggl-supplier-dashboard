@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GGL Dashboard – Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-page">
+  <a href="#" class="back-link" onclick="return false;">← Back to Sustainability Hub Portal</a>
+
+  <div class="login-card">
+    <div class="brand-row">
+      <svg class="logo-hex" viewBox="0 0 48 48" fill="none">
+        <path d="M24 2L42 12V36L24 46L6 36V12L24 2Z" fill="#6B1A1A"/>
+        <path d="M24 11L33 16.5V31.5L24 37L15 31.5V16.5L24 11Z" fill="white" fill-opacity="0.92"/>
+        <text x="24" y="29" text-anchor="middle" fill="#6B1A1A" font-size="11" font-weight="700" font-family="Inter,sans-serif">GGL</text>
+      </svg>
+      <div class="brand-text">
+        <h1>GGL DASHBOARD</h1>
+        <div class="dept">DOWNSTREAM — SUSTAINABILITY</div>
+      </div>
+    </div>
+
+    <p class="tagline">Sustainable Supply. Responsible Refining.</p>
+    <div class="divider"></div>
+
+    <h2 class="signin-title">Sign in</h2>
+    <p class="signin-sub">Use your authorized account to access the GGL Dashboard.</p>
+
+    <div class="local-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Local preview · localhost:8080
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">EMAIL ADDRESS</label>
+        <input type="email" id="email" value="admin@ggl.com" placeholder="you@company.com" required>
+      </div>
+      <div class="form-group">
+        <label for="password">PASSWORD</label>
+        <input type="password" id="password" value="Ggl@2026" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-signin">Sign in</button>
+    </form>
+  </div>
+
+  <script>
+    const SESSION_KEY = 'ggl_session_token';
+    if (localStorage.getItem(SESSION_KEY)) location.href = '/dashboard.html';
+
+    document.getElementById('loginForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        document.getElementById('errorMsg').textContent = data.error;
+        document.getElementById('errorMsg').classList.add('show');
+        return;
+      }
+      localStorage.setItem(SESSION_KEY, data.token);
+      localStorage.setItem('ggl_session_user', JSON.stringify(data.user));
+      location.href = '/dashboard.html';
+    };
+  </script>
+</body>
+</html>
