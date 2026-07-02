@@ -8,11 +8,10 @@ import type {
 const DEFAULT_GAS_URL =
   'https://script.google.com/macros/s/AKfycbySQt20CiIRiSMYI4IpYWiJmtdI52B44_5gFyc_86gPoSnnu3Y5d2_rx4-3PjFJq4Vsxg/exec';
 
-const GAS_URL = (import.meta.env.VITE_GAS_URL || (import.meta.env.PROD ? DEFAULT_GAS_URL : '')).replace(
-  /\/$/,
-  '',
-);
-const USE_GAS = Boolean(GAS_URL);
+const GAS_URL = (import.meta.env.VITE_GAS_URL || DEFAULT_GAS_URL).replace(/\/$/, '');
+/** Production: same-origin proxy avoids Apps Script CORS. Dev: local Python or direct GAS. */
+const GAS_ENDPOINT = import.meta.env.PROD ? '/api/gas' : import.meta.env.VITE_GAS_URL ? GAS_URL : '';
+const USE_GAS = Boolean(GAS_ENDPOINT);
 
 async function parseGasResponse<T>(res: Response): Promise<T> {
   const text = await res.text();
@@ -23,13 +22,19 @@ async function parseGasResponse<T>(res: Response): Promise<T> {
     }
     return data;
   } catch (err) {
-    if (err instanceof Error && !err.message.includes('JSON')) throw err;
-    throw new Error('API tidak merespons JSON. Cek deploy Apps Script (Anyone).');
+    if (err instanceof Error && !err.message.includes('JSON') && !err.message.includes('API')) {
+      throw err;
+    }
+    throw new Error(
+      text.slice(0, 120).includes('<')
+        ? 'Apps Script mengembalikan HTML. Pastikan deploy Web App = Anyone, lalu New version deploy.'
+        : `API error: ${text.slice(0, 160)}`,
+    );
   }
 }
 
 async function gasPost<T>(route: string, payload: Record<string, unknown> = {}): Promise<T> {
-  const res = await fetch(GAS_URL, {
+  const res = await fetch(GAS_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ route, ...payload }),
@@ -93,14 +98,15 @@ export const api = {
 
   exportCsvUrl(site: string, year: string, filters: TableFilters) {
     if (USE_GAS) {
-      const url = new URL(GAS_URL);
-      url.searchParams.set('route', '/api/export-csv');
-      url.searchParams.set('site', site);
-      url.searchParams.set('year', year);
-      url.searchParams.set('search', filters.search || '');
-      url.searchParams.set('certFilter', filters.certFilter || '');
-      url.searchParams.set('supplierFilter', filters.supplierFilter || '');
-      return url.toString();
+      const params = new URLSearchParams({
+        route: '/api/export-csv',
+        site,
+        year,
+        search: filters.search || '',
+        certFilter: filters.certFilter || '',
+        supplierFilter: filters.supplierFilter || '',
+      });
+      return `/api/gas?${params.toString()}`;
     }
     const params = new URLSearchParams({ site, year, ...filters });
     return `/api/export-csv?${params.toString()}`;

@@ -29,7 +29,9 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initError, setInitError] = useState('');
+  const [initDone, setInitDone] = useState(false);
   const [sites, setSites] = useState<Site[]>([]);
   const [currentSite, setCurrentSite] = useState('');
   const [currentYear, setCurrentYear] = useState('');
@@ -72,16 +74,25 @@ export default function DashboardPage() {
   }, [currentSite, currentYear, filters]);
 
   useEffect(() => {
-    api.getInitial().then((data) => {
-      setSites(data.sites);
-      setCurrentSite(data.defaultSite);
-      setCurrentYear(data.defaultYear);
-    });
+    api
+      .getInitial()
+      .then((data) => {
+        setSites(data.sites);
+        setCurrentSite(data.defaultSite || data.sites[0]?.id || 'EUP');
+        setCurrentYear(data.defaultYear || data.years[data.years.length - 1] || '2026');
+        setYears(data.years);
+        setInitDone(true);
+      })
+      .catch((err) => {
+        setInitError(err instanceof Error ? err.message : 'Gagal memuat data');
+        setInitDone(true);
+      });
   }, []);
 
   useEffect(() => {
-    if (currentSite && currentYear) loadDashboard();
-  }, [currentSite, currentYear, loadDashboard]);
+    if (!initDone || initError || !currentSite || !currentYear) return;
+    loadDashboard();
+  }, [initDone, initError, currentSite, currentYear, loadDashboard]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -131,6 +142,14 @@ export default function DashboardPage() {
         <Sidebar />
 
         <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-6 sm:px-8">
+          {initError && (
+            <div
+              className="mb-4 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm text-red-700"
+              role="alert"
+            >
+              {initError}
+            </div>
+          )}
           <div className="page-header-row">
             <div className="page-header-main">
               <div className="mb-1 text-xs font-medium" style={{ color: '#9c8a8a' }}>
