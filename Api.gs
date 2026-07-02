@@ -52,17 +52,14 @@ function handleApiGet_(params) {
 
   if (route === '/api/initial' || route === 'initial') {
     try {
-      var token = params.token || '';
-      if (!token) throw new Error('Token wajib untuk /api/initial');
-      return getInitialData(token);
+      return getInitialData();
     } catch (err) {
-      return apiError_(err.message || 'Request failed', 401);
+      return apiError_(err.message || 'Request failed', 400);
     }
   }
 
   if (route === '/api/export-csv' || route === 'export-csv') {
     try {
-      requireAuth_(params.token);
       var site = params.site || 'EUP';
       var year = String(params.year || '2026');
       var filters = {
@@ -97,9 +94,9 @@ function handleApiPost_(body, query) {
 
   if (route === '/api/initial' || route === 'initial') {
     try {
-      return getInitialData(params.token);
+      return getInitialData();
     } catch (err) {
-      return apiError_(err.message || 'Initial gagal', 401);
+      return apiError_(err.message || 'Initial gagal', 400);
     }
   }
 

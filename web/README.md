@@ -51,15 +51,13 @@ web/
 
 Buat `web/.env`:
 
+Tidak ada halaman login. URL Apps Script sudah di-hardcode di production — **tidak perlu** set environment variable di Vercel.
+
+Opsional (override URL):
+
 ```env
-VITE_GAS_URL=https://script.google.com/macros/s/AKfycbz9neQrC4sG-F-yuTmdho0gyrJRtBbIjq5IPLgByrDSynZsRogtXAFVOeCpFH6T7rdgsg/exec
-VITE_GAS_EMAIL=admin@ggl.com
-VITE_GAS_PASSWORD=Ggl@2026
+VITE_GAS_URL=https://script.google.com/macros/s/.../exec
 ```
-
-Di **Vercel → Project Settings → Environment Variables**, set ketiga variable di atas lalu **Redeploy**.
-
-Tidak ada halaman login — session dibuat otomatis di background.
 
 ## Apps Script
 

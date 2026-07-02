@@ -1,16 +1,18 @@
 import type {
   DashboardData,
   InitialData,
-  LoginResponse,
   SupplierRecord,
   TableFilters,
 } from '@/types';
-import { getToken, setSession } from '@/lib/auth';
 
-const GAS_URL = (import.meta.env.VITE_GAS_URL || '').replace(/\/$/, '');
+const DEFAULT_GAS_URL =
+  'https://script.google.com/macros/s/AKfycbz9neQrC4sG-F-yuTmdho0gyrJRtBbIjq5IPLgByrDSynZsRogtXAFVOeCpFH6T7rdgsg/exec';
+
+const GAS_URL = (import.meta.env.VITE_GAS_URL || (import.meta.env.PROD ? DEFAULT_GAS_URL : '')).replace(
+  /\/$/,
+  '',
+);
 const USE_GAS = Boolean(GAS_URL);
-
-let sessionPromise: Promise<void> | null = null;
 
 async function parseGasResponse<T>(res: Response): Promise<T> {
   const text = await res.text();
@@ -21,8 +23,8 @@ async function parseGasResponse<T>(res: Response): Promise<T> {
     }
     return data;
   } catch (err) {
-    if (err instanceof Error && err.message !== 'Unexpected token') throw err;
-    throw new Error('API tidak merespons JSON. Cek deploy Apps Script (Anyone) dan URL VITE_GAS_URL.');
+    if (err instanceof Error && !err.message.includes('JSON')) throw err;
+    throw new Error('API tidak merespons JSON. Cek deploy Apps Script (Anyone).');
   }
 }
 
@@ -36,19 +38,6 @@ async function gasPost<T>(route: string, payload: Record<string, unknown> = {}):
   return parseGasResponse<T>(res);
 }
 
-async function ensureSession(): Promise<void> {
-  if (!USE_GAS || getToken()) return;
-
-  const email = import.meta.env.VITE_GAS_EMAIL as string | undefined;
-  const password = import.meta.env.VITE_GAS_PASSWORD as string | undefined;
-  if (!email || !password) {
-    throw new Error('VITE_GAS_EMAIL dan VITE_GAS_PASSWORD belum diset di Vercel.');
-  }
-
-  const data = await gasPost<LoginResponse>('/api/login', { email, password });
-  setSession(data.token, data.user);
-}
-
 async function requestLocal<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     headers: { 'Content-Type': 'application/json', ...init?.headers },
@@ -60,11 +49,8 @@ async function requestLocal<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 async function requestGas<T>(route: string, init?: RequestInit): Promise<T> {
-  if (!sessionPromise) sessionPromise = ensureSession();
-  await sessionPromise;
-
   const body = init?.body ? (JSON.parse(init.body as string) as Record<string, unknown>) : {};
-  return gasPost<T>(route, { token: getToken(), ...body });
+  return gasPost<T>(route, body);
 }
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
@@ -73,13 +59,6 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  async bootstrap() {
-    if (USE_GAS) {
-      sessionPromise = ensureSession();
-      await sessionPromise;
-    }
-  },
-
   getInitial() {
     return request<InitialData>('/api/initial');
   },
@@ -121,8 +100,6 @@ export const api = {
       url.searchParams.set('search', filters.search || '');
       url.searchParams.set('certFilter', filters.certFilter || '');
       url.searchParams.set('supplierFilter', filters.supplierFilter || '');
-      const token = getToken();
-      if (token) url.searchParams.set('token', token);
       return url.toString();
     }
     const params = new URLSearchParams({ site, year, ...filters });

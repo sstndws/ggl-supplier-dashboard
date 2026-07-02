@@ -764,17 +764,14 @@ function handleApiGet_(params) {
 
   if (route === '/api/initial' || route === 'initial') {
     try {
-      var token = params.token || '';
-      if (!token) throw new Error('Token wajib untuk /api/initial');
-      return getInitialData(token);
+      return getInitialData();
     } catch (err) {
-      return apiError_(err.message || 'Request failed', 401);
+      return apiError_(err.message || 'Request failed', 400);
     }
   }
 
   if (route === '/api/export-csv' || route === 'export-csv') {
     try {
-      requireAuth_(params.token);
       var site = params.site || 'EUP';
       var year = String(params.year || '2026');
       var filters = {
@@ -804,6 +801,14 @@ function handleApiPost_(body, query) {
       return login(params.email, params.password);
     } catch (err) {
       return apiError_(err.message || 'Login gagal', 401);
+    }
+  }
+
+  if (route === '/api/initial' || route === 'initial') {
+    try {
+      return getInitialData();
+    } catch (err) {
+      return apiError_(err.message || 'Initial gagal', 400);
     }
   }
 
@@ -943,7 +948,6 @@ function doGet(e) {
 }
 
 function getInitialData(token) {
-  var session = requireAuth_(token);
   var sites = getSites();
   var defaultSite = sites.length ? sites[0].id : 'EUP';
   var years = getAvailableYears(defaultSite);
@@ -953,15 +957,14 @@ function getInitialData(token) {
     years: years,
     defaultSite: defaultSite,
     defaultYear: defaultYear,
-    userEmail: session.email,
-    userName: session.name,
+    userEmail: '',
+    userName: 'GGL Dashboard',
     certOptions: CERT_OPTIONS,
     masterFields: MASTER_FIELDS,
   };
 }
 
 function apiGetDashboard(token, site, year, filters) {
-  requireAuth_(token);
   return {
     analytics: getAnalytics(site, year),
     records: getRecords(site, year, filters),
@@ -971,27 +974,22 @@ function apiGetDashboard(token, site, year, filters) {
 }
 
 function apiSaveRecord(token, record) {
-  requireAuth_(token);
   return saveRecord(record);
 }
 
 function apiDeleteRecord(token, id) {
-  requireAuth_(token);
   return deleteRecord(id);
 }
 
 function apiExportCsv(token, site, year, filters) {
-  requireAuth_(token);
   return exportCsv(site, year, filters);
 }
 
 function apiGeneratePdf(token, site, year, filters) {
-  requireAuth_(token);
   return generatePdfHtml(site, year, filters);
 }
 
 function apiAddSite(token, siteId, name, description) {
-  requireAuth_(token);
   return addSite(siteId, name, description);
 }
 
