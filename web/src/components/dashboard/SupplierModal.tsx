@@ -1,8 +1,9 @@
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Modal from '@/components/ui/Modal';
+import SupplierFormField from '@/components/dashboard/SupplierFormField';
+import { supplierFormFieldSpanClass } from '@/lib/supplierFormLayout';
+import { resolveSupplierSchema } from '@/lib/defaultSchema';
 import type { FieldSchema, SupplierRecord } from '@/types';
-import { FormEvent } from 'react';
+import { X } from 'lucide-react';
+import { FormEvent, useEffect, useMemo } from 'react';
 
 export default function SupplierModal({
   open,
@@ -17,9 +18,21 @@ export default function SupplierModal({
   record: SupplierRecord | null;
   onSave: (data: Record<string, string>) => Promise<void>;
 }) {
-  const fields = schema.filter(
+  const resolvedSchema = useMemo(() => resolveSupplierSchema(schema), [schema]);
+  const fields = resolvedSchema.filter(
     (f) => !['id', 'site', 'year', 'updated_at'].includes(f.key),
   );
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  if (!open) return null;
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,57 +45,52 @@ export default function SupplierModal({
   }
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={record ? 'Edit Supplier' : 'Add Supplier'}
-      size="lg"
+    <div
+      className="supplier-profile-overlay"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      role="dialog"
+      aria-modal="true"
+      aria-label={record ? 'Edit supplier' : 'Tambah supplier'}
     >
-      <form onSubmit={handleSubmit} className="p-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {fields.map((field) => {
-            const value = record?.[field.key] || '';
-            const isLong = ['address', 'person_in_charge', 'location'].includes(field.key);
+      <div className="add-site-modal supplier-add-modal">
+        <div className="add-site-modal__head">
+          <div>
+            <h2>{record ? 'Edit Supplier' : 'Add Supplier'}</h2>
+            <p>Isi data supplier untuk registry site dan tahun aktif.</p>
+          </div>
+          <button type="button" className="supplier-profile-close" onClick={onClose} aria-label="Tutup">
+            <X size={16} />
+          </button>
+        </div>
 
-            return (
-              <div key={field.key} className={isLong ? 'md:col-span-2' : ''}>
-                <label className="mb-1.5 block text-xs font-semibold text-ink-2">
-                  {field.label}
-                </label>
-                {field.type === 'select' && field.options ? (
-                  <select
-                    name={field.key}
-                    defaultValue={value}
-                    className="h-10 w-full rounded-lg border border-line bg-white px-3 text-sm outline-none focus:border-maroon-500/40 focus:ring-4 focus:ring-maroon-600/8"
-                  >
-                    <option value="">—</option>
-                    {field.options.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                ) : isLong ? (
-                  <textarea
-                    name={field.key}
-                    defaultValue={value}
-                    rows={3}
-                    className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-maroon-500/40 focus:ring-4 focus:ring-maroon-600/8"
-                  />
-                ) : (
-                  <Input name={field.key} defaultValue={value} />
-                )}
+        <form className="supplier-add-form" onSubmit={handleSubmit}>
+          <div className="sp-edit-grid">
+            {fields.map((field) => (
+              <div
+                key={field.key}
+                className={`sp-form-field${supplierFormFieldSpanClass(field.key)}`}
+              >
+                <label htmlFor={`add-${field.key}`}>{field.label}</label>
+                <SupplierFormField
+                  field={field}
+                  id={`add-${field.key}`}
+                  name={field.key}
+                  defaultValue={record?.[field.key] || ''}
+                />
               </div>
-            );
-          })}
-        </div>
-        <div className="mt-6 flex justify-end gap-2 border-t border-line pt-5">
-          <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit">Save Supplier</Button>
-        </div>
-      </form>
-    </Modal>
+            ))}
+          </div>
+
+          <div className="add-site-modal__actions">
+            <button type="button" className="sp-btn sp-btn-ghost" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="sp-btn sp-btn-primary">
+              Save Supplier
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

@@ -173,3 +173,17 @@
 .app-sidebar__spacer {
   flex: 1;
 }
+
+.app-sidebar__footer {
+  padding: 10px 8px 0;
+  border-top: 1px solid rgba(74, 28, 28, 0.1);
+  margin-top: 8px;
+}
+
+.app-sidebar__item--portal {
+  color: #7a6060;
+}
+
+.app-sidebar__item--portal:hover {
+  color: #4a1c1c;
+}

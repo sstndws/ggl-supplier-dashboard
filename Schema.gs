@@ -58,7 +58,7 @@ var MASTER_FIELDS = [
   { key: 'distance_to', label: 'Distance to Collector/Stockpile', type: 'text', width: 180 },
   { key: 'nearest_airport', label: 'Nearest Airport', type: 'text', width: 180 },
   { key: 'travel_time_and_distance_to_airport_est', label: 'Travel Time to Airport', type: 'text', width: 200 },
-  { key: 'sustainability_certificate', label: 'Sustainability Certificate', type: 'select', options: CERT_OPTIONS, width: 180 },
+  { key: 'sustainability_certificate', label: 'Sustainability Certificate', type: 'text', width: 180 },
   { key: 'certificate_no', label: 'Certificate No.', type: 'text', width: 140 },
   { key: 'certificate_validity_start', label: 'Cert Validity Start', type: 'date', width: 130 },
   { key: 'certificate_validity_end', label: 'Cert Validity End', type: 'date', width: 130 },

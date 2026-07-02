@@ -1,6 +1,4 @@
-export default function TopBar({ onLogout }: { onLogout: () => void }) {
-  const user = JSON.parse(localStorage.getItem('ggl_session_user') || '{}');
-
+export default function TopBar() {
   return (
     <header
       className="sticky top-0 z-40 flex h-[52px] items-center justify-between px-5"
@@ -19,23 +17,6 @@ export default function TopBar({ onLogout }: { onLogout: () => void }) {
           </svg>
         </div>
         <span className="text-[15px] font-semibold text-white">GGL Dashboard</span>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <span className="hidden text-sm text-white/85 sm:block">{user.email}</span>
-        <button
-          type="button"
-          onClick={onLogout}
-          className="rounded-md border border-white/30 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/10"
-        >
-          Sign out
-        </button>
-        <div
-          className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white"
-          style={{ background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.25)' }}
-        >
-          {(user.name || user.email || 'G').charAt(0).toUpperCase()}
-        </div>
       </div>
     </header>
   );

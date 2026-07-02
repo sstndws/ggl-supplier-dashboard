@@ -203,13 +203,18 @@
 
 .sp-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 560px) {
   .sp-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+  }
+
+  .sp-field.wide,
+  .sp-field.full {
+    grid-column: 1;
   }
 }
 
@@ -341,8 +346,9 @@
 
 .sp-edit-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+  align-items: start;
 }
 
 .sp-form-field {
@@ -350,6 +356,7 @@
   flex-direction: column;
   gap: 7px;
   min-width: 0;
+  align-self: stretch;
 }
 
 .sp-form-field.wide {
@@ -370,9 +377,12 @@
 }
 
 .sp-input {
+  display: block;
   width: 100%;
+  min-width: 0;
   box-sizing: border-box;
   padding: 10px 12px;
+  min-height: 42px;
   border: 1.5px solid rgba(139, 26, 26, 0.22);
   border-radius: 10px;
   font-size: 13.5px;
@@ -404,7 +414,7 @@
 }
 
 .sp-input-textarea {
-  min-height: 84px;
+  min-height: 72px;
   resize: vertical;
   line-height: 1.5;
 }
@@ -414,10 +424,26 @@
   -webkit-appearance: none;
   padding-right: 34px;
   cursor: pointer;
+  min-height: 42px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239c8a8a' stroke-width='2.2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   background-color: #fff;
+}
+
+.sp-input-date {
+  color-scheme: light;
+  min-height: 42px;
+}
+
+.sp-input-date::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.55;
+  filter: invert(18%) sepia(45%) saturate(2500%) hue-rotate(330deg);
+}
+
+.sp-input-date:hover::-webkit-calendar-picker-indicator {
+  opacity: 0.9;
 }
 
 .sp-edit-actions {
@@ -682,6 +708,23 @@
   color: #7a5050;
 }
 
+.supplier-add-modal {
+  max-width: 720px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.supplier-add-form {
+  padding: 18px 24px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.supplier-add-form .sp-edit-grid {
+  margin-bottom: 16px;
+}
+
 .add-site-modal__actions {
   display: flex;
   justify-content: flex-end;
@@ -867,16 +910,16 @@
   .sp-head-val {
     justify-content: flex-start;
   }
+}
 
-  .sp-edit-form {
-    grid-template-columns: 1fr 1fr;
-  }
-
+@media (max-width: 560px) {
   .sp-edit-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
-  .sp-form-field.wide {
-    grid-column: span 2;
+  .sp-form-field.wide,
+  .sp-form-field.full {
+    grid-column: 1;
   }
 }

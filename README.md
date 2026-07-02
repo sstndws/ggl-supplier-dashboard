@@ -39,6 +39,16 @@ Kolom mengikuti file Excel Anda:
 
 ## Cara Deploy (Step by Step)
 
+> **Panduan lengkap:** lihat [APPS_SCRIPT.md](./APPS_SCRIPT.md)
+
+### Cara tercepat
+
+1. Buat Google Spreadsheet baru
+2. **Extensions → Apps Script** → upload semua file `.gs` dan `.html`
+3. Simpan → kembali ke spreadsheet
+4. Menu **GGL Dashboard → ① Install lengkap**
+5. **Deploy → New deployment → Web app → Anyone → Deploy**
+
 ### 1. Buat Google Spreadsheet baru
 
 1. Buka [Google Sheets](https://sheets.google.com) → **Blank spreadsheet**
@@ -151,16 +161,19 @@ Data awal diambil dari:
 
 ```
 supplier-dashboard/
-├── Code.gs          # Entry point web app
+├── Code.gs          # Entry point web app (doGet + halaman HTML)
+├── Api.gs           # REST API (doPost) untuk React / fetch
+├── Setup.gs         # Menu spreadsheet & install satu klik
 ├── Auth.gs          # Login, session, users
 ├── Schema.gs        # Definisi kolom & opsi dropdown
 ├── DataService.gs   # CRUD, analytics, export
-├── SeedData.gs      # Data 627 baris (generated)
+├── SeedData.gs      # Data 627 baris (embedded)
 ├── Login.html       # Halaman sign in
 ├── Index.html       # UI dashboard
 ├── Styles.html      # CSS
 ├── App.html         # JavaScript frontend
 ├── appsscript.json  # Manifest
+├── APPS_SCRIPT.md   # Panduan deploy lengkap
 ├── seed_data.json   # JSON mentah (untuk re-import)
-└── README.md        # Dokumentasi ini
+└── README.md
 ```

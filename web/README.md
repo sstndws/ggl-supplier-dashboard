@@ -47,7 +47,20 @@ web/
 └── vite.config.ts      proxy /api → localhost:8080
 ```
 
+## Production (Vercel + Apps Script)
+
+Buat `web/.env`:
+
+```env
+VITE_GAS_URL=https://script.google.com/macros/s/AKfycbz9neQrC4sG-F-yuTmdho0gyrJRtBbIjq5IPLgByrDSynZsRogtXAFVOeCpFH6T7rdgsg/exec
+VITE_GAS_EMAIL=admin@ggl.com
+VITE_GAS_PASSWORD=Ggl@2026
+```
+
+Di **Vercel → Project Settings → Environment Variables**, set ketiga variable di atas lalu **Redeploy**.
+
+Tidak ada halaman login — session dibuat otomatis di background.
+
 ## Apps Script
 
-Folder `../` (Code.gs, Index.html, dll) tetap untuk deploy Google Apps Script.
-Frontend TypeScript ini untuk development & preview lokal yang lebih bagus.
+Folder `../` (`GGL_Dashboard.gs`) untuk backend Google Sheets.

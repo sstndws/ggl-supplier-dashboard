@@ -14,6 +14,40 @@ SEED_PATH = ROOT.parent / "seed_data.json"
 
 USERS = {"admin@ggl.com": {"password": "Ggl@2026", "name": "GGL Admin", "role": "admin"}}
 STORE = {"sites": [], "schemas": {}, "records": []}
+DEFAULT_YEARS = ["2024", "2025", "2026"]
+
+
+def get_schema(site, year):
+    key = f"{site}_{year}"
+    schema = STORE["schemas"].get(key)
+    if schema:
+        return schema
+    for fallback in (f"EUP_{year}", "EUP_2026", "EUP_2025", "EUP_2024", "RSB_2026"):
+        if fallback in STORE["schemas"]:
+            return copy.deepcopy(STORE["schemas"][fallback])
+    return []
+
+
+def seed_site_schemas(site_id):
+    template = get_schema("EUP", "2026")
+    if not template:
+        return
+    for year in DEFAULT_YEARS:
+        key = f"{site_id}_{year}"
+        if key not in STORE["schemas"]:
+            STORE["schemas"][key] = copy.deepcopy(template)
+
+
+def years_for_site(site):
+    years = sorted({str(r["year"]) for r in STORE["records"] if r["site"] == site})
+    if years:
+        return years
+    years = sorted(
+        k.split("_", 1)[1]
+        for k in STORE["schemas"]
+        if k.startswith(f"{site}_") and "_" in k
+    )
+    return years or list(DEFAULT_YEARS)
 
 
 def load_seed():
@@ -119,13 +153,12 @@ class Handler(SimpleHTTPRequestHandler):
 
         if path == "/api/dashboard":
             site, year = body.get("site"), str(body.get("year"))
-            schema = STORE["schemas"].get(f"{site}_{year}", [])
-            years = sorted({str(r["year"]) for r in STORE["records"] if r["site"] == site})
+            schema = get_schema(site, year)
             self.send_json({
                 "analytics": get_analytics(site, year),
                 "records": filter_records(site, year, body.get("filters") or {}),
                 "schema": schema,
-                "years": years,
+                "years": years_for_site(site),
             })
             return
 
@@ -159,6 +192,7 @@ class Handler(SimpleHTTPRequestHandler):
                 return
             entry = {"id": sid, "name": site.get("name") or sid, "description": site.get("description") or ""}
             STORE["sites"].append(entry)
+            seed_site_schemas(sid)
             self.send_json(entry)
             return
 
@@ -184,7 +218,7 @@ class Handler(SimpleHTTPRequestHandler):
             qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             site = qs.get("site", ["EUP"])[0]
             year = qs.get("year", ["2026"])[0]
-            schema = STORE["schemas"].get(f"{site}_{year}", [])
+            schema = get_schema(site, year)
             recs = filter_records(site, year, {"search": qs.get("search", [""])[0], "certFilter": qs.get("certFilter", [""])[0], "supplierFilter": qs.get("supplierFilter", [""])[0]})
             lines = [",".join(f'"{f["label"]}"' for f in schema)]
             for r in recs:

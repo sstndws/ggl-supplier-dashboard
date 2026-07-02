@@ -22,8 +22,20 @@ function getOrCreateSheet_(ss, name, headers) {
   return sheet;
 }
 
+function parseSiteYearCombo_(combo) {
+  var idx = String(combo).lastIndexOf('_');
+  if (idx === -1) return { site: String(combo), year: '' };
+  return {
+    site: String(combo).substring(0, idx),
+    year: String(combo).substring(idx + 1),
+  };
+}
+
 function setupSpreadsheet() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.create('Supplier Cangkang Dashboard');
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    ss = SpreadsheetApp.create('Supplier Cangkang Dashboard');
+  }
   PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', ss.getId());
 
   getOrCreateSheet_(ss, SHEET_SITES, ['id', 'name', 'description', 'created_at']);
@@ -57,9 +69,9 @@ function seedInitialData_(ss) {
 
   var rows = [];
   Object.keys(seed.data).forEach(function (combo) {
-    var parts = combo.split('_');
-    var year = parts.pop();
-    var site = parts.join('_');
+    var parsed = parseSiteYearCombo_(combo);
+    var site = parsed.site;
+    var year = parsed.year;
     seed.data[combo].forEach(function (rec, idx) {
       var row = new Array(headers.length).fill('');
       row[keyIndex['id']] = site + '_' + year + '_' + (idx + 1);
@@ -81,9 +93,9 @@ function seedInitialData_(ss) {
   if (schemaSheet.getLastRow() <= 1 && seed.schemas) {
     var schemaRows = [];
     Object.keys(seed.schemas).forEach(function (combo) {
-      var parts = combo.split('_');
-      var year = parts.pop();
-      var site = parts.join('_');
+      var parsed = parseSiteYearCombo_(combo);
+      var site = parsed.site;
+      var year = parsed.year;
       seed.schemas[combo].forEach(function (f, i) {
         schemaRows.push([site, year, f.key, f.label, f.type || 'text', i + 1]);
       });
@@ -95,7 +107,11 @@ function seedInitialData_(ss) {
 }
 
 function getEmbeddedSeedData_() {
-  // Seed data di-inject saat deploy – jalankan importSeedFromJson() untuk data lengkap
+  try {
+    if (typeof getSeedJson_ === 'function') {
+      return JSON.parse(getSeedJson_());
+    }
+  } catch (e) {}
   return null;
 }
 
@@ -109,9 +125,9 @@ function importSeedFromJson(jsonString) {
 
   var rows = [];
   Object.keys(seed.data).forEach(function (combo) {
-    var parts = combo.split('_');
-    var year = parts.pop();
-    var site = parts.join('_');
+    var parsed = parseSiteYearCombo_(combo);
+    var site = parsed.site;
+    var year = parsed.year;
     seed.data[combo].forEach(function (rec, idx) {
       var row = new Array(headers.length).fill('');
       row[keyIndex['id']] = Utilities.getUuid();
@@ -139,9 +155,9 @@ function importSeedFromJson(jsonString) {
   }
   var schemaRows = [];
   Object.keys(seed.schemas).forEach(function (combo) {
-    var parts = combo.split('_');
-    var year = parts.pop();
-    var site = parts.join('_');
+    var parsed = parseSiteYearCombo_(combo);
+    var site = parsed.site;
+    var year = parsed.year;
     seed.schemas[combo].forEach(function (f, i) {
       schemaRows.push([site, year, f.key, f.label, f.type || 'text', i + 1]);
     });
@@ -152,7 +168,10 @@ function importSeedFromJson(jsonString) {
 
   if (seed.sites) {
     var sitesSheet = ss.getSheetByName(SHEET_SITES);
-    sitesSheet.getRange(2, 1, sitesSheet.getMaxRows() - 1, 4).clearContent();
+    var lastSiteRow = sitesSheet.getLastRow();
+    if (lastSiteRow > 1) {
+      sitesSheet.getRange(2, 1, lastSiteRow - 1, 4).clearContent();
+    }
     var siteRows = seed.sites.map(function (s) {
       return [s.id, s.name, s.description, new Date().toISOString()];
     });
@@ -184,7 +203,26 @@ function addSite(siteId, name, description) {
     throw new Error('Site "' + siteId + '" sudah ada.');
   }
   sheet.appendRow([siteId, name || siteId, description || '', new Date().toISOString()]);
+  seedSiteSchemas_(siteId);
   return { id: siteId, name: name || siteId, description: description || '' };
+}
+
+function seedSiteSchemas_(siteId) {
+  var ss = getSpreadsheet_();
+  var schemaSheet = ss.getSheetByName(SHEET_SCHEMA);
+  var templateYears = getAvailableYears('EUP');
+  if (!templateYears.length) templateYears = ['2024', '2025', '2026'];
+  templateYears.forEach(function (year) {
+    var template = getSchema('EUP', year);
+    if (!template.length) {
+      template = MASTER_FIELDS.map(function (f, i) {
+        return { key: f.key, label: f.label, type: f.type, sortOrder: i + 1, options: f.options || null, width: f.width };
+      });
+    }
+    template.forEach(function (f, i) {
+      schemaSheet.appendRow([siteId, year, f.key, f.label, f.type || 'text', f.sortOrder || i + 1]);
+    });
+  });
 }
 
 function getSchema(site, year) {

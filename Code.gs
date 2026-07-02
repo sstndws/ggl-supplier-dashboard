@@ -1,9 +1,23 @@
 /**
- * Entry point – Web App
+ * Entry point – Web App + REST API
  */
 
 function doGet(e) {
-  var page = (e && e.parameter && e.parameter.page) || 'login';
+  e = e || {};
+  var route = e.parameter && e.parameter.route;
+
+  if (route) {
+    var result = handleApiGet_(e.parameter || {});
+    if (result && result._type === 'csv') {
+      return csvOutput_(result.content, result.filename);
+    }
+    if (result && result.error) {
+      return jsonOutput_(result);
+    }
+    return jsonOutput_(result);
+  }
+
+  var page = (e.parameter && e.parameter.page) || 'login';
 
   if (page === 'app') {
     return HtmlService.createTemplateFromFile('Index')

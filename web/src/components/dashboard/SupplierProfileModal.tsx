@@ -1,8 +1,10 @@
+import SupplierFormField from '@/components/dashboard/SupplierFormField';
 import { CertBadge, SupplierTypeBadge, renderSupplierCell } from '@/components/registry/RegistryBadges';
+import { supplierFormFieldSpanClass, supplierViewFieldSpanClass } from '@/lib/supplierFormLayout';
 import type { FieldSchema, SupplierRecord } from '@/types';
 import { getSupplierType } from '@/lib/utils';
 import { ChevronDown, Trash2, X } from 'lucide-react';
-import { FormEvent, useEffect, useRef, useState, type ReactNode } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 
 const HEADER_KEYS = new Set([
   'company_name',
@@ -50,15 +52,6 @@ const SECTIONS: { title: string; keys: string[] }[] = [
   },
 ];
 
-const FULL_WIDTH_KEYS = new Set([
-  'address',
-  'location',
-  'person_in_charge',
-  'nearest_airport',
-  'travel_time_and_distance_to_airport_est',
-  'email',
-]);
-
 const EDIT_SECTIONS: { title: string; keys: string[] }[] = [
   {
     title: 'Supplier Identity',
@@ -101,14 +94,6 @@ const EDIT_SECTIONS: { title: string; keys: string[] }[] = [
     ],
   },
 ];
-
-function fieldSpanClass(key: string, index: number, total: number): string {
-  if (FULL_WIDTH_KEYS.has(key)) return ' full';
-  const remainder = total % 3;
-  if (remainder === 1 && index === total - 1) return ' full';
-  if (remainder === 2 && index === total - 1) return ' wide';
-  return '';
-}
 
 function fieldsByKeys(allFields: FieldSchema[], keys: string[]) {
   const order = new Map(keys.map((k, i) => [k, i]));
@@ -220,59 +205,19 @@ export default function SupplierProfileModal({
   const editUsedKeys = new Set(EDIT_SECTIONS.flatMap((s) => s.keys));
   const extraEditFields = fields.filter((f) => !editUsedKeys.has(f.key));
 
-  function renderEditField(f: FieldSchema, index: number, total: number) {
-    const isLong = FULL_WIDTH_KEYS.has(f.key);
+  function renderEditField(f: FieldSchema) {
     const id = `sp-${f.key}`;
     const value = form[f.key] || '';
 
-    let control: ReactNode;
-    if (f.type === 'select' && f.options) {
-      control = (
-        <select
-          id={id}
-          className="sp-input sp-input-select"
-          value={value}
-          onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
-        >
-          <option value="">Pilih…</option>
-          {f.options.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </select>
-      );
-    } else if (isLong) {
-      control = (
-        <textarea
-          id={id}
-          className="sp-input sp-input-textarea"
-          rows={3}
-          placeholder="—"
-          value={value}
-          onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
-        />
-      );
-    } else {
-      control = (
-        <input
-          id={id}
-          className="sp-input"
-          type="text"
-          placeholder="—"
-          value={value}
-          onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
-        />
-      );
-    }
-
     return (
-      <div
-        key={f.key}
-        className={`sp-form-field${fieldSpanClass(f.key, index, total)}`}
-      >
+      <div key={f.key} className={`sp-form-field${supplierFormFieldSpanClass(f.key)}`}>
         <label htmlFor={id}>{f.label}</label>
-        {control}
+        <SupplierFormField
+          field={f}
+          id={id}
+          value={value}
+          onChange={(v) => setForm((prev) => ({ ...prev, [f.key]: v }))}
+        />
       </div>
     );
   }
@@ -330,11 +275,8 @@ export default function SupplierProfileModal({
                 <div key={section.title} className="sp-section">
                   <div className="sp-section-title">{section.title}</div>
                   <div className="sp-grid">
-                    {sectionFields.map((f, i) => (
-                      <div
-                        key={f.key}
-                        className={`sp-field${fieldSpanClass(f.key, i, sectionFields.length)}`}
-                      >
+                    {sectionFields.map((f) => (
+                      <div key={f.key} className={`sp-field${supplierViewFieldSpanClass(f.key)}`}>
                         <span className="sp-label">{f.label}</span>
                         <div className="sp-val">{renderSupplierCell(f.key, record)}</div>
                       </div>
@@ -348,11 +290,8 @@ export default function SupplierProfileModal({
               <div className="sp-section">
                 <div className="sp-section-title">Additional Info</div>
                 <div className="sp-grid">
-                  {extraFields.map((f, i) => (
-                    <div
-                      key={f.key}
-                      className={`sp-field${fieldSpanClass(f.key, i, extraFields.length)}`}
-                    >
+                  {extraFields.map((f) => (
+                    <div key={f.key} className={`sp-field${supplierViewFieldSpanClass(f.key)}`}>
                       <span className="sp-label">{f.label}</span>
                       <div className="sp-val">{renderSupplierCell(f.key, record)}</div>
                     </div>
@@ -383,7 +322,7 @@ export default function SupplierProfileModal({
                   <div key={section.title} className="sp-edit-section">
                     <div className="sp-section-title">{section.title}</div>
                     <div className="sp-edit-grid">
-                      {sectionFields.map((f, i) => renderEditField(f, i, sectionFields.length))}
+                      {sectionFields.map((f) => renderEditField(f))}
                     </div>
                   </div>
                 );
@@ -393,9 +332,7 @@ export default function SupplierProfileModal({
                 <div className="sp-edit-section">
                   <div className="sp-section-title">Additional Info</div>
                   <div className="sp-edit-grid">
-                    {extraEditFields.map((f, i) =>
-                      renderEditField(f, i, extraEditFields.length),
-                    )}
+                    {extraEditFields.map((f) => renderEditField(f))}
                   </div>
                 </div>
               )}

@@ -1,5 +1,7 @@
-import { PanelLeftClose, PanelLeftOpen, Table2 } from 'lucide-react';
+import { ArrowLeft, PanelLeftClose, PanelLeftOpen, Table2 } from 'lucide-react';
 import { useState } from 'react';
+
+const PORTAL_HUB_URL = 'https://sustainability-hub-portal-eight.vercel.app/';
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(false);
@@ -32,6 +34,20 @@ export default function Sidebar() {
       </nav>
 
       <div className="app-sidebar__spacer" />
+
+      <div className="app-sidebar__footer">
+        <a
+          href={PORTAL_HUB_URL}
+          className="app-sidebar__item app-sidebar__item--portal"
+          data-tip="Back to Portal Hub"
+          title="Back to Portal Hub"
+        >
+          <span className="app-sidebar__icon">
+            <ArrowLeft size={16} strokeWidth={1.8} />
+          </span>
+          <span className="app-sidebar__label">Back to Portal Hub</span>
+        </a>
+      </div>
     </aside>
   );
 }

@@ -1,6 +1,7 @@
+import SiteControls from '@/components/dashboard/SiteControls';
 import ExportModal from '@/components/dashboard/ExportModal';
 import AddSiteModal from '@/components/dashboard/AddSiteModal';
-import SiteControls from '@/components/dashboard/SiteControls';
+import { resolveSupplierSchema } from '@/lib/defaultSchema';
 import StatCards from '@/components/dashboard/StatCards';
 import SupplierModal from '@/components/dashboard/SupplierModal';
 import SupplierProfileModal from '@/components/dashboard/SupplierProfileModal';
@@ -27,7 +28,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
-export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
+export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [sites, setSites] = useState<Site[]>([]);
   const [currentSite, setCurrentSite] = useState('');
@@ -90,6 +91,7 @@ export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
   }, [filters.search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const siteName = sites.find((s) => s.id === currentSite)?.name || currentSite;
+  const activeSchema = resolveSupplierSchema(schema);
 
   async function handleAddSave(data: Record<string, string>) {
     await api.saveRecord({
@@ -123,7 +125,7 @@ export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
 
   return (
     <div className="min-h-screen" style={{ background: '#f7f1f1' }}>
-      <TopBar onLogout={onLogout} />
+      <TopBar />
 
       <div className="flex">
         <Sidebar />
@@ -224,7 +226,7 @@ export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
                 </button>
                 {colMenuOpen && (
                   <div className="registry-col-menu">
-                    {schema
+                    {activeSchema
                       .filter((f) => !['id', 'site', 'year', 'updated_at'].includes(f.key))
                       .map((f) => (
                         <label key={f.key}>
@@ -288,7 +290,7 @@ export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
             ) : (
               <SupplierTable
                 records={records}
-                schema={schema}
+                schema={activeSchema}
                 visibleKeys={visibleKeys}
                 onRowClick={setProfileRecord}
               />
@@ -300,7 +302,7 @@ export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
       <SupplierModal
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
-        schema={schema}
+        schema={activeSchema}
         record={null}
         onSave={handleAddSave}
       />
@@ -308,7 +310,7 @@ export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
       <SupplierProfileModal
         open={!!profileRecord}
         record={profileRecord}
-        schema={schema}
+        schema={activeSchema}
         onClose={() => setProfileRecord(null)}
         onSave={handleProfileSave}
         onDelete={handleDelete}
@@ -321,6 +323,7 @@ export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
           const site = await api.addSite(siteId, siteName);
           setSites((prev) => [...prev, site]);
           setCurrentSite(site.id);
+          loadDashboard();
         }}
       />
 
@@ -328,7 +331,7 @@ export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
         open={exportOpen}
         mode={exportMode}
         onClose={() => setExportOpen(false)}
-        schema={schema}
+        schema={activeSchema}
         records={records}
         siteName={siteName}
         siteId={currentSite}
