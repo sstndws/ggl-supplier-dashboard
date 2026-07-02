@@ -6,7 +6,7 @@ import type {
 } from '@/types';
 
 const DEFAULT_GAS_URL =
-  'https://script.google.com/macros/s/AKfycbz9neQrC4sG-F-yuTmdho0gyrJRtBbIjq5IPLgByrDSynZsRogtXAFVOeCpFH6T7rdgsg/exec';
+  'https://script.google.com/macros/s/AKfycbySQt20CiIRiSMYI4IpYWiJmtdI52B44_5gFyc_86gPoSnnu3Y5d2_rx4-3PjFJq4Vsxg/exec';
 
 const GAS_URL = (import.meta.env.VITE_GAS_URL || (import.meta.env.PROD ? DEFAULT_GAS_URL : '')).replace(
   /\/$/,
