@@ -3,7 +3,7 @@
 .registry-table-card {
   background: #fff;
   border: 1px solid rgba(139, 26, 26, 0.09);
-  border-radius: 16px;
+  border-radius: 18px;
   box-shadow: 0 2px 16px rgba(139, 26, 26, 0.06);
   overflow: hidden;
   margin-bottom: 24px;
@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px 20px 12px;
+  padding: 16px 18px 12px;
   border-bottom: 1px solid rgba(74, 28, 28, 0.06);
 }
 
@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 16px;
+  padding: 10px 14px;
   border-bottom: 1px solid rgba(74, 28, 28, 0.06);
   background: #fdfafa;
   position: relative;
@@ -61,14 +61,15 @@
   gap: 8px;
   flex-wrap: wrap;
   row-gap: 8px;
-  padding: 10px 16px;
+  padding: 10px 14px;
   border-bottom: 1px solid rgba(74, 28, 28, 0.06);
   background: #fdfafa;
   position: relative;
   z-index: 30;
 }
 
-.registry-toolbar select {
+.registry-toolbar select,
+.registry-select {
   height: 34px;
   border: 1px solid rgba(139, 26, 26, 0.18);
   border-radius: 8px;
@@ -78,11 +79,17 @@
   color: #5a3030;
 }
 
+.registry-select:focus {
+  outline: none;
+  border-color: rgba(139, 26, 26, 0.36);
+  box-shadow: 0 0 0 3px rgba(139, 26, 26, 0.08);
+}
+
 .registry-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 34px;
+  height: 35px;
   padding: 0 12px;
   border-radius: 8px;
   font-size: 12.5px;
@@ -126,7 +133,7 @@
 
 .registry-table-scroll {
   overflow: auto;
-  max-height: min(65vh, calc(100dvh - 280px));
+  max-height: min(63vh, calc(100dvh - 300px));
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: rgba(139, 26, 26, 0.18) transparent;
@@ -343,7 +350,7 @@ table.supplier-registry-table .mill-cell-wrap {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  width: 280px;
+  width: 292px;
   max-height: 320px;
   overflow: auto;
   background: #fff;
@@ -391,4 +398,17 @@ table.supplier-registry-table .mill-cell-wrap {
   text-align: center;
   color: #9c8a8a;
   font-size: 14px;
+  min-height: 112px;
+}
+
+.registry-col-wrap {
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .registry-scope-label {
+    width: 100%;
+    margin-left: 0;
+    padding-top: 2px;
+  }
 }

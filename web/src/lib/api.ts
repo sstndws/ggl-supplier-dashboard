@@ -12,6 +12,7 @@ const GAS_URL = (import.meta.env.VITE_GAS_URL || DEFAULT_GAS_URL).replace(/\/$/,
 /** Production: same-origin proxy avoids Apps Script CORS. Dev: local Python or direct GAS. */
 const GAS_ENDPOINT = import.meta.env.PROD ? '/api/gas' : import.meta.env.VITE_GAS_URL ? GAS_URL : '';
 const USE_GAS = Boolean(GAS_ENDPOINT);
+const API_TIMEOUT_MS = 15000;
 
 async function parseGasResponse<T>(res: Response): Promise<T> {
   const text = await res.text();
@@ -34,12 +35,21 @@ async function parseGasResponse<T>(res: Response): Promise<T> {
 }
 
 async function gasPost<T>(route: string, payload: Record<string, unknown> = {}): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
   const res = await fetch(GAS_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ route, ...payload }),
     redirect: 'follow',
+    signal: controller.signal,
+  }).catch((err) => {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error('Request timeout: koneksi ke Apps Script terlalu lama.');
+    }
+    throw err;
   });
+  clearTimeout(timer);
   return parseGasResponse<T>(res);
 }
 

@@ -19,6 +19,7 @@ import type {
 import { DEFAULT_VISIBLE_KEYS } from '@/types';
 import {
   Columns3,
+  Eraser,
   Download,
   FileText,
   Loader2,
@@ -26,7 +27,7 @@ import {
   Search,
   SlidersHorizontal,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
@@ -58,6 +59,7 @@ export default function DashboardPage() {
   const [siteModalOpen, setSiteModalOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [exportMode, setExportMode] = useState<'pdf' | 'csv'>('pdf');
+  const colMenuRef = useRef<HTMLDivElement>(null);
 
   const loadDashboard = useCallback(async () => {
     if (!currentSite || !currentYear) return;
@@ -68,6 +70,9 @@ export default function DashboardPage() {
       setRecords(data.records);
       setAnalytics(data.analytics);
       setYears(data.years);
+      setInitError('');
+    } catch (err) {
+      setInitError(err instanceof Error ? err.message : 'Gagal memuat dashboard');
     } finally {
       setLoading(false);
     }
@@ -96,13 +101,27 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
+      if (!initDone || initError) return;
       if (currentSite && currentYear) loadDashboard();
     }, 300);
     return () => window.clearTimeout(timer);
-  }, [filters.search]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filters.search, currentSite, currentYear, initDone, initError]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!colMenuOpen) return;
+    const onClick = (event: MouseEvent) => {
+      if (!colMenuRef.current) return;
+      if (!colMenuRef.current.contains(event.target as Node)) {
+        setColMenuOpen(false);
+      }
+    };
+    window.addEventListener('mousedown', onClick);
+    return () => window.removeEventListener('mousedown', onClick);
+  }, [colMenuOpen]);
 
   const siteName = sites.find((s) => s.id === currentSite)?.name || currentSite;
   const activeSchema = resolveSupplierSchema(schema);
+  const hasActiveFilters = Boolean(filters.search || filters.certFilter || filters.supplierFilter);
 
   async function handleAddSave(data: Record<string, string>) {
     await api.saveRecord({
@@ -135,7 +154,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#f7f1f1' }}>
+    <div className="min-h-screen dashboard-shell">
       <TopBar />
 
       <div className="flex">
@@ -152,11 +171,11 @@ export default function DashboardPage() {
           )}
           <div className="page-header-row">
             <div className="page-header-main">
-              <div className="mb-1 text-xs font-medium" style={{ color: '#9c8a8a' }}>
-                Dashboard / <span style={{ color: '#7a5f5f' }}>{siteName}</span>
+              <div className="dashboard-breadcrumb">
+                Dashboard / <span>{siteName}</span>
               </div>
               <h1 className="page-title">{siteName} – {currentYear}</h1>
-              <p className="text-sm" style={{ color: '#7a5f5f' }}>
+              <p className="dashboard-subtitle">
                 Kelola dan pantau daftar supplier cangkang per site dan tahun
               </p>
             </div>
@@ -207,6 +226,7 @@ export default function DashboardPage() {
               </button>
 
               <select
+                className="registry-select"
                 value={filters.certFilter}
                 onChange={(e) =>
                   setFilters((f) => ({
@@ -221,6 +241,7 @@ export default function DashboardPage() {
               </select>
 
               <select
+                className="registry-select"
                 value={filters.supplierFilter}
                 onChange={(e) =>
                   setFilters((f) => ({
@@ -234,7 +255,7 @@ export default function DashboardPage() {
                 <option value="lama">Supplier Lama</option>
               </select>
 
-              <div style={{ position: 'relative' }}>
+              <div className="registry-col-wrap" ref={colMenuRef}>
                 <button
                   type="button"
                   className="registry-btn"
@@ -267,6 +288,23 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  className="registry-btn"
+                  onClick={() =>
+                    setFilters({
+                      search: '',
+                      certFilter: '',
+                      supplierFilter: '',
+                    })
+                  }
+                >
+                  <Eraser size={14} />
+                  Reset
+                </button>
+              )}
 
               <button
                 type="button"

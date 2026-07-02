@@ -534,11 +534,32 @@
 }
 
 /* Page header + selects */
+.dashboard-shell {
+  background: linear-gradient(180deg, #f8f2f2 0%, #f7f1f1 100%);
+}
+
+.dashboard-breadcrumb {
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9c8a8a;
+}
+
+.dashboard-breadcrumb span {
+  color: #7a5f5f;
+}
+
+.dashboard-subtitle {
+  font-size: 14px;
+  color: #7a5f5f;
+  margin: 0;
+}
+
 .page-header-row {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 20px 28px;
+  gap: 16px 24px;
   flex-wrap: wrap;
 }
 
