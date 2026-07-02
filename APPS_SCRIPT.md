@@ -88,7 +88,7 @@ React UI (`web/`) bisa pakai backend Apps Script:
 2. Buat file `web/.env`:
 
 ```env
-VITE_GAS_URL=https://script.google.com/macros/s/AKfycbySQt20CiIRiSMYI4IpYWiJmtdI52B44_5gFyc_86gPoSnnu3Y5d2_rx4-3PjFJq4Vsxg/exec
+VITE_GAS_URL=https://script.google.com/macros/s/AKfycbzuihACttC68ZRgLgwMKZVwksxE7drwePqCQzBimSqKsaapNDo9GGYU04BCZyr84kbWWQ/exec
 ```
 
 3. Build & deploy:

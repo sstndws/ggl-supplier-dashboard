@@ -6,7 +6,7 @@ import type {
 } from '@/types';
 
 const DEFAULT_GAS_URL =
-  'https://script.google.com/macros/s/AKfycbySQt20CiIRiSMYI4IpYWiJmtdI52B44_5gFyc_86gPoSnnu3Y5d2_rx4-3PjFJq4Vsxg/exec';
+  'https://script.google.com/macros/s/AKfycbzuihACttC68ZRgLgwMKZVwksxE7drwePqCQzBimSqKsaapNDo9GGYU04BCZyr84kbWWQ/exec';
 
 const GAS_URL = (import.meta.env.VITE_GAS_URL || DEFAULT_GAS_URL).replace(/\/$/, '');
 /** Production: same-origin proxy avoids Apps Script CORS. Dev: local Python or direct GAS. */
