@@ -3,7 +3,7 @@ import { supplierFormFieldSpanClass } from '@/lib/supplierFormLayout';
 import { resolveSupplierSchema } from '@/lib/defaultSchema';
 import type { FieldSchema, SupplierRecord } from '@/types';
 import { X } from 'lucide-react';
-import { FormEvent, useEffect, useMemo } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 
 export default function SupplierModal({
   open,
@@ -22,9 +22,11 @@ export default function SupplierModal({
   const fields = resolvedSchema.filter(
     (f) => !['id', 'site', 'year', 'updated_at'].includes(f.key),
   );
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!open) return;
+    setSaving(false);
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
@@ -36,12 +38,18 @@ export default function SupplierModal({
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (saving) return;
     const form = new FormData(e.currentTarget);
     const data: Record<string, string> = {};
     fields.forEach((f) => {
       data[f.key] = String(form.get(f.key) || '');
     });
-    await onSave(data);
+    setSaving(true);
+    try {
+      await onSave(data);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -82,11 +90,11 @@ export default function SupplierModal({
           </div>
 
           <div className="add-site-modal__actions">
-            <button type="button" className="sp-btn sp-btn-ghost" onClick={onClose}>
+            <button type="button" className="sp-btn sp-btn-ghost" onClick={onClose} disabled={saving}>
               Cancel
             </button>
-            <button type="submit" className="sp-btn sp-btn-primary">
-              Save Supplier
+            <button type="submit" className="sp-btn sp-btn-primary" disabled={saving}>
+              {saving ? 'Menyimpan…' : 'Save Supplier'}
             </button>
           </div>
         </form>

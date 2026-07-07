@@ -13,11 +13,13 @@ export default function AddSiteModal({
   const [siteId, setSiteId] = useState('');
   const [siteName, setSiteName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!open) return;
     setSiteId('');
     setSiteName('');
+    setError('');
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
@@ -29,10 +31,14 @@ export default function AddSiteModal({
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (saving) return;
     setSaving(true);
+    setError('');
     try {
       await onSave(siteId.trim().toUpperCase(), siteName.trim());
       onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal menyimpan site.');
     } finally {
       setSaving(false);
     }
@@ -81,8 +87,17 @@ export default function AddSiteModal({
             />
           </div>
 
+          {error && (
+            <p
+              role="alert"
+              style={{ color: '#b42318', fontSize: 13, margin: '4px 0 0' }}
+            >
+              {error}
+            </p>
+          )}
+
           <div className="add-site-modal__actions">
-            <button type="button" className="sp-btn sp-btn-ghost" onClick={onClose}>
+            <button type="button" className="sp-btn sp-btn-ghost" onClick={onClose} disabled={saving}>
               Cancel
             </button>
             <button type="submit" className="sp-btn sp-btn-primary" disabled={saving}>

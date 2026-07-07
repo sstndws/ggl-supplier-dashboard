@@ -124,33 +124,45 @@ export default function DashboardPage() {
   const hasActiveFilters = Boolean(filters.search || filters.certFilter || filters.supplierFilter);
 
   async function handleAddSave(data: Record<string, string>) {
-    await api.saveRecord({
-      id: '',
-      site: currentSite,
-      year: currentYear,
-      ...data,
-    } as SupplierRecord);
-    setAddModalOpen(false);
-    loadDashboard();
+    try {
+      await api.saveRecord({
+        id: '',
+        site: currentSite,
+        year: currentYear,
+        ...data,
+      } as SupplierRecord);
+      setAddModalOpen(false);
+      loadDashboard();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Gagal menyimpan supplier.');
+    }
   }
 
   async function handleProfileSave(data: Record<string, string>) {
     if (!profileRecord) return;
-    await api.saveRecord({
-      id: profileRecord.id,
-      site: currentSite,
-      year: currentYear,
-      ...data,
-    } as SupplierRecord);
-    setProfileRecord(null);
-    loadDashboard();
+    try {
+      await api.saveRecord({
+        id: profileRecord.id,
+        site: currentSite,
+        year: currentYear,
+        ...data,
+      } as SupplierRecord);
+      setProfileRecord(null);
+      loadDashboard();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Gagal menyimpan perubahan.');
+    }
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Hapus supplier ini?')) return;
-    await api.deleteRecord(id);
-    setProfileRecord(null);
-    loadDashboard();
+    try {
+      await api.deleteRecord(id);
+      setProfileRecord(null);
+      loadDashboard();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Gagal menghapus supplier.');
+    }
   }
 
   return (

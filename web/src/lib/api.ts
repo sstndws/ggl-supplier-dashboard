@@ -105,20 +105,4 @@ export const api = {
       body: JSON.stringify({ id, name }),
     });
   },
-
-  exportCsvUrl(site: string, year: string, filters: TableFilters) {
-    if (USE_GAS) {
-      const params = new URLSearchParams({
-        route: '/api/export-csv',
-        site,
-        year,
-        search: filters.search || '',
-        certFilter: filters.certFilter || '',
-        supplierFilter: filters.supplierFilter || '',
-      });
-      return `/api/gas?${params.toString()}`;
-    }
-    const params = new URLSearchParams({ site, year, ...filters });
-    return `/api/export-csv?${params.toString()}`;
-  },
 };
