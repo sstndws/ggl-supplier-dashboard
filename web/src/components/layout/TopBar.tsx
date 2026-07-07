@@ -1,5 +1,3 @@
-import { GglLogo } from '@/components/brand/GglLogo';
-
 export default function TopBar() {
   return (
     <header
@@ -7,7 +5,14 @@ export default function TopBar() {
       style={{ background: '#8B1A1A', boxShadow: '0 1px 0 rgba(0,0,0,0.12)' }}
     >
       <div className="flex items-center gap-3">
-        <GglLogo size={28} variant="light" />
+        <img
+          src="/favicon.svg"
+          alt=""
+          width={28}
+          height={28}
+          className="rounded-md"
+          aria-hidden
+        />
         <span className="text-[15px] font-semibold text-white">GGL Dashboard</span>
       </div>
     </header>
