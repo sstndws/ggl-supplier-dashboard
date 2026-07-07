@@ -1,5 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" fill="none">
-  <path d="M22 2L38 11V33L22 42L6 33V11L22 2Z" fill="#7B1E1E"/>
-  <path d="M22 10L30 15V29L22 34L14 29V15L22 10Z" fill="white" fill-opacity="0.92"/>
-  <text x="22" y="26.5" text-anchor="middle" fill="#7B1E1E" font-size="9.5" font-weight="700" font-family="DM Sans, Inter, sans-serif">GGL</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="7" fill="#7B1E1E"/>
+  <path
+    d="M16 5.2C11.8 6.6 9 10.4 8.4 15.2C7.9 19.2 9.2 23.2 12.2 25.4C13.6 26.4 15 27 16 27.2C17 27 18.4 26.4 19.8 25.4C22.8 23.2 24.1 19.2 23.6 15.2C23 10.4 20.2 6.6 16 5.2Z"
+    fill="#8FD4A8"
+  />
+  <path
+    d="M16 7.8V25.6"
+    stroke="#3F8F5C"
+    stroke-width="1.1"
+    stroke-linecap="round"
+  />
+  <path
+    d="M16 11.2C13.4 13.2 12 15.8 11.4 18.6"
+    stroke="#3F8F5C"
+    stroke-width="0.85"
+    stroke-linecap="round"
+    fill="none"
+  />
+  <path
+    d="M16 11.2C18.6 13.2 20 15.8 20.6 18.6"
+    stroke="#3F8F5C"
+    stroke-width="0.85"
+    stroke-linecap="round"
+    fill="none"
+  />
+  <path
+    d="M16 25.6C15.2 26.8 14.2 27.6 13 28.2"
+    stroke="#3F8F5C"
+    stroke-width="0.9"
+    stroke-linecap="round"
+    fill="none"
+  />
 </svg>
