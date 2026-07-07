@@ -9,8 +9,8 @@ import SupplierTable from '@/components/dashboard/SupplierTable';
 import Sidebar from '@/components/layout/Sidebar';
 import TopBar from '@/components/layout/TopBar';
 import { api } from '@/lib/api';
+import { computeAnalytics, filterSupplierRecords } from '@/lib/filterSuppliers';
 import type {
-  Analytics,
   FieldSchema,
   Site,
   SupplierRecord,
@@ -27,10 +27,16 @@ import {
   Search,
   SlidersHorizontal,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+const EMPTY_FILTERS: TableFilters = {
+  search: '',
+  certFilter: '',
+  supplierFilter: '',
+};
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [initError, setInitError] = useState('');
   const [initDone, setInitDone] = useState(false);
   const [sites, setSites] = useState<Site[]>([]);
@@ -39,12 +45,6 @@ export default function DashboardPage() {
   const [years, setYears] = useState<string[]>([]);
   const [schema, setSchema] = useState<FieldSchema[]>([]);
   const [records, setRecords] = useState<SupplierRecord[]>([]);
-  const [analytics, setAnalytics] = useState<Analytics>({
-    totalSuppliers: 0,
-    stockpiles: 0,
-    uncertified: 0,
-    newSuppliers: 0,
-  });
   const [filters, setFilters] = useState<TableFilters>({
     search: '',
     certFilter: '',
@@ -65,10 +65,9 @@ export default function DashboardPage() {
     if (!currentSite || !currentYear) return;
     setLoading(true);
     try {
-      const data = await api.getDashboard(currentSite, currentYear, filters);
+      const data = await api.getDashboard(currentSite, currentYear, EMPTY_FILTERS);
       setSchema(data.schema);
       setRecords(data.records);
-      setAnalytics(data.analytics);
       setYears(data.years);
       setInitError('');
     } catch (err) {
@@ -76,7 +75,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentSite, currentYear, filters]);
+  }, [currentSite, currentYear]);
 
   useEffect(() => {
     api
@@ -99,13 +98,14 @@ export default function DashboardPage() {
     loadDashboard();
   }, [initDone, initError, currentSite, currentYear, loadDashboard]);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (!initDone || initError) return;
-      if (currentSite && currentYear) loadDashboard();
-    }, 300);
-    return () => window.clearTimeout(timer);
-  }, [filters.search, currentSite, currentYear, initDone, initError]); // eslint-disable-line react-hooks/exhaustive-deps
+  const filteredRecords = useMemo(
+    () => filterSupplierRecords(records, filters),
+    [records, filters],
+  );
+  const analytics = useMemo(
+    () => computeAnalytics(filteredRecords),
+    [filteredRecords],
+  );
 
   useEffect(() => {
     if (!colMenuOpen) return;
@@ -331,7 +331,7 @@ export default function DashboardPage() {
               </button>
 
               <span className="registry-scope-label">
-                {records.length} rows · pilih kolom saat export
+                {filteredRecords.length} rows · pilih kolom saat export
               </span>
             </div>
 
@@ -346,10 +346,11 @@ export default function DashboardPage() {
               </div>
             ) : (
               <SupplierTable
-                records={records}
+                records={filteredRecords}
                 schema={activeSchema}
                 visibleKeys={visibleKeys}
                 onRowClick={setProfileRecord}
+                isFiltered={hasActiveFilters}
               />
             )}
           </div>
@@ -389,7 +390,7 @@ export default function DashboardPage() {
         mode={exportMode}
         onClose={() => setExportOpen(false)}
         schema={activeSchema}
-        records={records}
+        records={filteredRecords}
         siteName={siteName}
         siteId={currentSite}
         year={currentYear}

@@ -14,11 +14,13 @@ export default function SupplierTable({
   schema,
   visibleKeys,
   onRowClick,
+  isFiltered = false,
 }: {
   records: SupplierRecord[];
   schema: FieldSchema[];
   visibleKeys: Set<string>;
   onRowClick: (record: SupplierRecord) => void;
+  isFiltered?: boolean;
 }) {
   const fields = useMemo(
     () =>
@@ -52,7 +54,9 @@ export default function SupplierTable({
           {records.length === 0 ? (
             <tr>
               <td colSpan={fields.length} className="registry-empty">
-                Tidak ada data supplier untuk filter ini.
+                {isFiltered
+                  ? 'Tidak ada supplier yang cocok dengan filter ini.'
+                  : 'Tidak ada data supplier.'}
               </td>
             </tr>
           ) : (
