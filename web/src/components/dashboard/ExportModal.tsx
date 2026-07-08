@@ -83,7 +83,7 @@ export default function ExportModal({
           sheetName: `${siteId} ${year}`,
         });
       } catch (err) {
-        alert(err instanceof Error ? err.message : 'Gagal membuat file Excel.');
+        alert(err instanceof Error ? err.message : 'Failed to create Excel file.');
         setExporting(false);
         return;
       }
@@ -115,23 +115,23 @@ export default function ExportModal({
           <div>
             <h2>{mode === 'pdf' ? 'Export PDF' : 'Export Excel'}</h2>
             <p>
-              Pilih kolom yang ingin disertakan · {records.length} baris · {siteName} {year}
+              Choose columns to include · {records.length} rows · {siteName} {year}
             </p>
           </div>
-          <button type="button" className="supplier-profile-close" onClick={onClose} aria-label="Tutup">
+          <button type="button" className="supplier-profile-close" onClick={onClose} aria-label="Close">
             <X size={16} />
           </button>
         </div>
 
         <div className="export-modal__toolbar">
           <button type="button" className="export-chip" onClick={() => toggleAll(true)} disabled={allSelected}>
-            Pilih semua
+            Select all
           </button>
           <button type="button" className="export-chip" onClick={() => toggleAll(false)} disabled={noneSelected}>
-            Kosongkan
+            Clear
           </button>
           <span className="export-modal__count">
-            {selectedFields.length} / {fields.length} kolom dipilih
+            {selectedFields.length} / {fields.length} columns selected
           </span>
         </div>
 
@@ -162,7 +162,7 @@ export default function ExportModal({
             {mode === 'pdf'
               ? 'Generate PDF'
               : exporting
-                ? 'Menyiapkan…'
+                ? 'Preparing…'
                 : 'Download Excel'}
           </button>
         </div>

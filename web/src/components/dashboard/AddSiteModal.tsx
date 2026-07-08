@@ -38,7 +38,7 @@ export default function AddSiteModal({
       await onSave(siteId.trim().toUpperCase(), siteName.trim());
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal menyimpan site.');
+      setError(err instanceof Error ? err.message : 'Failed to save site.');
     } finally {
       setSaving(false);
     }
@@ -50,15 +50,15 @@ export default function AddSiteModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"
-      aria-label="Tambah site baru"
+      aria-label="Add new site"
     >
       <div className="add-site-modal">
         <div className="add-site-modal__head">
           <div>
-            <h2>Tambah Site</h2>
-            <p>Buat site supplier baru untuk registry dashboard.</p>
+            <h2>Add Site</h2>
+            <p>Create a new supplier site for the registry dashboard.</p>
           </div>
-          <button type="button" className="supplier-profile-close" onClick={onClose} aria-label="Tutup">
+          <button type="button" className="supplier-profile-close" onClick={onClose} aria-label="Close">
             <X size={16} />
           </button>
         </div>
@@ -69,18 +69,18 @@ export default function AddSiteModal({
             <input
               id="add-site-id"
               className="sp-input"
-              placeholder="Contoh: EUP"
+              placeholder="e.g. EUP"
               value={siteId}
               onChange={(e) => setSiteId(e.target.value.toUpperCase())}
               required
             />
           </div>
           <div className="add-site-field">
-            <label htmlFor="add-site-name">Nama Site</label>
+            <label htmlFor="add-site-name">Site Name</label>
             <input
               id="add-site-name"
               className="sp-input"
-              placeholder="Contoh: EUP - Cangkang"
+              placeholder="e.g. EUP - Cangkang"
               value={siteName}
               onChange={(e) => setSiteName(e.target.value)}
               required
@@ -101,7 +101,7 @@ export default function AddSiteModal({
               Cancel
             </button>
             <button type="submit" className="sp-btn sp-btn-primary" disabled={saving}>
-              {saving ? 'Menyimpan…' : 'Simpan Site'}
+              {saving ? 'Saving…' : 'Save Site'}
             </button>
           </div>
         </form>

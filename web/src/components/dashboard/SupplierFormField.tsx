@@ -39,7 +39,7 @@ export default function SupplierFormField({
           ? { value: raw, onChange: (e) => onChange?.(e.target.value) }
           : { defaultValue: raw })}
       >
-        <option value="">Pilih…</option>
+        <option value="">Select…</option>
         {field.options.map((opt) => (
           <option key={opt} value={opt}>
             {opt}

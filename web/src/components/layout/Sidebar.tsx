@@ -12,7 +12,7 @@ export default function Sidebar() {
         type="button"
         className="app-sidebar__toggle"
         onClick={() => setExpanded((v) => !v)}
-        aria-label={expanded ? 'Tutup sidebar' : 'Buka sidebar'}
+        aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
       >
         {expanded ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
       </button>

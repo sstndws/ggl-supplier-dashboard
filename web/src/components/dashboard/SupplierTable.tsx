@@ -33,7 +33,7 @@ export default function SupplierTable({
   );
 
   if (!fields.length) {
-    return <div className="registry-empty">Pilih kolom untuk ditampilkan.</div>;
+    return <div className="registry-empty">Select columns to display.</div>;
   }
 
   return (
@@ -55,8 +55,8 @@ export default function SupplierTable({
             <tr>
               <td colSpan={fields.length} className="registry-empty">
                 {isFiltered
-                  ? 'Tidak ada supplier yang cocok dengan filter ini.'
-                  : 'Tidak ada data supplier.'}
+                  ? 'No suppliers match this filter.'
+                  : 'No supplier data.'}
               </td>
             </tr>
           ) : (
@@ -65,7 +65,7 @@ export default function SupplierTable({
                 key={record.id}
                 className="mill-row-clickable"
                 onClick={() => onRowClick(record)}
-                title="Klik untuk lihat detail"
+                title="Click to view details"
               >
                 {fields.map((field) => (
                   <td key={field.key} className={`mill-td ${tdClass(field.key)}`}>

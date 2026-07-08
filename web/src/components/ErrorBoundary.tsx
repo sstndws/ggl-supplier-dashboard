@@ -15,7 +15,7 @@ export default class ErrorBoundary extends Component<Props, State> {
   static getDerivedStateFromError(error: unknown): State {
     return {
       hasError: true,
-      message: error instanceof Error ? error.message : 'Terjadi kesalahan tak terduga.',
+      message: error instanceof Error ? error.message : 'An unexpected error occurred.',
     };
   }
 
@@ -56,7 +56,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           }}
         >
           <h1 style={{ fontSize: 18, fontWeight: 700, color: '#8B1A1A', marginBottom: 8 }}>
-            Terjadi kesalahan
+            Something went wrong
           </h1>
           <p style={{ fontSize: 13, color: '#6b5555', marginBottom: 20, lineHeight: 1.5 }}>
             {this.state.message}
@@ -75,7 +75,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               cursor: 'pointer',
             }}
           >
-            Muat ulang halaman
+            Reload page
           </button>
         </div>
       </div>

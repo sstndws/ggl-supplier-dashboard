@@ -146,7 +146,7 @@ export function openCorporatePdf({
   filters: TableFilters;
   generatedBy?: string;
 }) {
-  const generatedAt = new Date().toLocaleString('id-ID', {
+  const generatedAt = new Date().toLocaleString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -428,7 +428,7 @@ export function openCorporatePdf({
 
   const w = window.open('', '_blank');
   if (!w) {
-    alert('Pop-up diblokir browser. Izinkan pop-up untuk export PDF.');
+    alert('Pop-up blocked by the browser. Please allow pop-ups to export PDF.');
     return;
   }
   w.document.open();

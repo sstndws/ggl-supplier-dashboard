@@ -10,7 +10,7 @@ function formatUpdatedAt(iso: string): string {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString('id-ID', {
+  return d.toLocaleString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -250,7 +250,7 @@ export default function SupplierProfileModal({
                   {lastUpdated ? (
                     <span>Last updated: {lastUpdated}</span>
                   ) : (
-                    <span>Belum pernah diupdate</span>
+                    <span>Never updated</span>
                   )}
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function SupplierProfileModal({
               type="button"
               className="supplier-profile-close"
               onClick={onClose}
-              aria-label="Tutup"
+              aria-label="Close"
             >
               <X size={16} />
             </button>
@@ -322,7 +322,7 @@ export default function SupplierProfileModal({
                   type="button"
                   className="sp-btn sp-btn-danger"
                   onClick={async () => {
-                    if (!confirm('Hapus supplier ini?')) return;
+                    if (!confirm('Delete this supplier?')) return;
                     await onDelete(record.id);
                     onClose();
                   }}
@@ -331,7 +331,7 @@ export default function SupplierProfileModal({
                   Delete
                 </button>
                 <button type="button" className="sp-btn sp-btn-ghost" onClick={onClose}>
-                  Tutup
+                  Close
                 </button>
                 <button type="button" className="sp-btn sp-btn-primary" onClick={startEditing}>
                   <Pencil size={14} />
@@ -343,7 +343,7 @@ export default function SupplierProfileModal({
             <div className="sp-edit-panel">
               <div className="sp-edit-header">
                 <h3>Edit Supplier</h3>
-                <p>Ubah data per section, lalu simpan perubahan ke registry.</p>
+                <p>Edit data by section, then save changes to the registry.</p>
               </div>
 
               <form className="sp-edit-form" onSubmit={handleSave}>
@@ -374,7 +374,7 @@ export default function SupplierProfileModal({
                     type="button"
                     className="sp-btn sp-btn-danger"
                     onClick={async () => {
-                      if (!confirm('Hapus supplier ini?')) return;
+                      if (!confirm('Delete this supplier?')) return;
                       await onDelete(record.id);
                       onClose();
                     }}

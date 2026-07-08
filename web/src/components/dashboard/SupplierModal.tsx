@@ -58,15 +58,15 @@ export default function SupplierModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"
-      aria-label={record ? 'Edit supplier' : 'Tambah supplier'}
+      aria-label={record ? 'Edit supplier' : 'Add supplier'}
     >
       <div className="add-site-modal supplier-add-modal">
         <div className="add-site-modal__head">
           <div>
             <h2>{record ? 'Edit Supplier' : 'Add Supplier'}</h2>
-            <p>Isi data supplier untuk registry site dan tahun aktif.</p>
+            <p>Fill in supplier data for the active site and year.</p>
           </div>
-          <button type="button" className="supplier-profile-close" onClick={onClose} aria-label="Tutup">
+          <button type="button" className="supplier-profile-close" onClick={onClose} aria-label="Close">
             <X size={16} />
           </button>
         </div>
@@ -94,7 +94,7 @@ export default function SupplierModal({
               Cancel
             </button>
             <button type="submit" className="sp-btn sp-btn-primary" disabled={saving}>
-              {saving ? 'Menyimpan…' : 'Save Supplier'}
+              {saving ? 'Saving…' : 'Save Supplier'}
             </button>
           </div>
         </form>

@@ -71,7 +71,7 @@ export default function DashboardPage() {
       setYears(data.years);
       setInitError('');
     } catch (err) {
-      setInitError(err instanceof Error ? err.message : 'Gagal memuat dashboard');
+      setInitError(err instanceof Error ? err.message : 'Failed to load dashboard');
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ export default function DashboardPage() {
         setInitDone(true);
       })
       .catch((err) => {
-        setInitError(err instanceof Error ? err.message : 'Gagal memuat data');
+        setInitError(err instanceof Error ? err.message : 'Failed to load data');
         setInitDone(true);
       });
   }, []);
@@ -134,7 +134,7 @@ export default function DashboardPage() {
       setAddModalOpen(false);
       loadDashboard();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Gagal menyimpan supplier.');
+      alert(err instanceof Error ? err.message : 'Failed to save supplier.');
     }
   }
 
@@ -150,18 +150,18 @@ export default function DashboardPage() {
       setProfileRecord(null);
       loadDashboard();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Gagal menyimpan perubahan.');
+      alert(err instanceof Error ? err.message : 'Failed to save changes.');
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Hapus supplier ini?')) return;
+    if (!confirm('Delete this supplier?')) return;
     try {
       await api.deleteRecord(id);
       setProfileRecord(null);
       loadDashboard();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Gagal menghapus supplier.');
+      alert(err instanceof Error ? err.message : 'Failed to delete supplier.');
     }
   }
 
@@ -188,7 +188,7 @@ export default function DashboardPage() {
               </div>
               <h1 className="page-title">{siteName} – {currentYear}</h1>
               <p className="dashboard-subtitle">
-                Kelola dan pantau daftar supplier cangkang per site dan tahun
+                Manage and monitor the palm shell supplier registry by site and year
               </p>
             </div>
 
@@ -263,8 +263,8 @@ export default function DashboardPage() {
                 }
               >
                 <option value="">All Supplier Types</option>
-                <option value="baru">Supplier Baru</option>
-                <option value="lama">Supplier Lama</option>
+                <option value="baru">New Supplier</option>
+                <option value="lama">Existing Supplier</option>
               </select>
 
               <div className="registry-col-wrap" ref={colMenuRef}>
@@ -343,7 +343,7 @@ export default function DashboardPage() {
               </button>
 
               <span className="registry-scope-label">
-                {filteredRecords.length} rows · pilih kolom saat export
+                {filteredRecords.length} rows · choose columns on export
               </span>
             </div>
 
