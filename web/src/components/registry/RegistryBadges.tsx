@@ -1,4 +1,4 @@
-import { getSupplierType, formatProfileDate, formatProfileNumber } from '@/lib/utils';
+import { getSupplierType, formatDateValue, formatProfileNumber, isDateField } from '@/lib/utils';
 
 function GlossyPill({ tier, label }: { tier: string; label: string }) {
   return (
@@ -112,8 +112,10 @@ export function renderSupplierCell(key: string, record: Record<string, string>) 
       );
     case 'certificate_validity_start':
     case 'certificate_validity_end':
-      return <span>{formatProfileDate(value)}</span>;
+      return <span>{formatDateValue(value)}</span>;
     default:
+      if (isDateField({ key }))
+        return <span>{value ? formatDateValue(value) : '—'}</span>;
       return value ? <CellWrap value={value} /> : <span style={{ color: '#ccc' }}>—</span>;
   }
 }

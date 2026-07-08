@@ -1,5 +1,5 @@
 import type { FieldSchema, SupplierRecord, TableFilters } from '@/types';
-import { escapeHtml } from '@/lib/utils';
+import { escapeHtml, formatDateValue, isDateField } from '@/lib/utils';
 
 const SKIP_KEYS = new Set(['id', 'site', 'year', 'updated_at']);
 
@@ -74,6 +74,11 @@ export async function downloadExcel({
     const row = sheet.addRow(
       columns.map((c) => {
         const raw = String(record[c.key] ?? '').trim();
+        if (!raw) return '';
+        if (isDateField(c)) {
+          const formatted = formatDateValue(raw);
+          return formatted === '—' ? '' : formatted;
+        }
         if (c.type === 'number' && isNumericValue(raw)) return Number(raw);
         return raw;
       }),
@@ -114,9 +119,11 @@ export async function downloadExcel({
   URL.revokeObjectURL(url);
 }
 
-function cellText(record: SupplierRecord, key: string): string {
-  const v = (record[key] || '').trim();
-  return v || '—';
+function cellText(record: SupplierRecord, column: FieldSchema): string {
+  const raw = (record[column.key] || '').trim();
+  if (!raw) return '—';
+  if (isDateField(column)) return formatDateValue(raw);
+  return raw;
 }
 
 function filterSummary(filters: TableFilters): string {
@@ -165,7 +172,7 @@ export function openCorporatePdf({
   const tableBody = records
     .map((r, i) => {
       const cells = columns
-        .map((c) => `<td>${escapeHtml(cellText(r, c.key))}</td>`)
+        .map((c) => `<td>${escapeHtml(cellText(r, c))}</td>`)
         .join('');
       return `<tr class="${i % 2 === 1 ? 'alt' : ''}">${cells}</tr>`;
     })
