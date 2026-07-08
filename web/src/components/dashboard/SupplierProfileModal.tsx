@@ -3,8 +3,21 @@ import { CertBadge, SupplierTypeBadge, renderSupplierCell } from '@/components/r
 import { supplierFormFieldSpanClass, supplierViewFieldSpanClass } from '@/lib/supplierFormLayout';
 import type { FieldSchema, SupplierRecord } from '@/types';
 import { getSupplierType } from '@/lib/utils';
-import { ChevronDown, Trash2, X } from 'lucide-react';
+import { Pencil, Trash2, X } from 'lucide-react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
+
+function formatUpdatedAt(iso: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 const HEADER_KEYS = new Set([
   'company_name',
@@ -122,8 +135,7 @@ export default function SupplierProfileModal({
   onDelete: (id: string) => Promise<void>;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const editRef = useRef<HTMLDivElement>(null);
-  const [showHint, setShowHint] = useState(true);
+  const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
@@ -145,25 +157,11 @@ export default function SupplierProfileModal({
       initial[f.key] = record[f.key] || '';
     });
     setForm(initial);
-    setShowHint(true);
+    setEditing(false);
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     });
   }, [record, open]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (!open) return;
-    const editEl = editRef.current;
-    const scrollEl = scrollRef.current;
-    if (!editEl || !scrollEl) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setShowHint(!entry.isIntersecting),
-      { root: scrollEl, threshold: 0.15 },
-    );
-    observer.observe(editEl);
-    return () => observer.disconnect();
-  }, [open, record]);
 
   useEffect(() => {
     if (!open) return;
@@ -179,6 +177,14 @@ export default function SupplierProfileModal({
   const company = record.company_name || 'Supplier';
   const mill = record.pks_mill_internal_name || '';
   const address = record.address || record.location || '';
+  const lastUpdated = formatUpdatedAt(record.updated_at || '');
+
+  function startEditing() {
+    setEditing(true);
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    });
+  }
 
   async function handleSave(e: FormEvent) {
     e.preventDefault();
@@ -238,7 +244,15 @@ export default function SupplierProfileModal({
                 <h2>{company}</h2>
                 {mill && <div className="sp-loc">{mill}</div>}
                 {address && <div className="sp-sub">{address}</div>}
-                {record.no && <div className="sp-meta">No. {record.no}</div>}
+                <div className="sp-meta">
+                  {record.no && <span>No. {record.no}</span>}
+                  {record.no && lastUpdated && <span> · </span>}
+                  {lastUpdated ? (
+                    <span>Last updated: {lastUpdated}</span>
+                  ) : (
+                    <span>Belum pernah diupdate</span>
+                  )}
+                </div>
               </div>
               <div className="supplier-profile-head-right">
                 <div className="sp-head-stack">
@@ -267,77 +281,43 @@ export default function SupplierProfileModal({
         </div>
 
         <div className="supplier-profile-scroll" ref={scrollRef}>
-          <div className="supplier-profile-body">
-            {SECTIONS.map((section) => {
-              const sectionFields = fieldsForSection(section.keys);
-              if (!sectionFields.length) return null;
-              return (
-                <div key={section.title} className="sp-section">
-                  <div className="sp-section-title">{section.title}</div>
-                  <div className="sp-grid">
-                    {sectionFields.map((f) => (
-                      <div key={f.key} className={`sp-field${supplierViewFieldSpanClass(f.key)}`}>
-                        <span className="sp-label">{f.label}</span>
-                        <div className="sp-val">{renderSupplierCell(f.key, record)}</div>
+          {!editing ? (
+            <>
+              <div className="supplier-profile-body">
+                {SECTIONS.map((section) => {
+                  const sectionFields = fieldsForSection(section.keys);
+                  if (!sectionFields.length) return null;
+                  return (
+                    <div key={section.title} className="sp-section">
+                      <div className="sp-section-title">{section.title}</div>
+                      <div className="sp-grid">
+                        {sectionFields.map((f) => (
+                          <div key={f.key} className={`sp-field${supplierViewFieldSpanClass(f.key)}`}>
+                            <span className="sp-label">{f.label}</span>
+                            <div className="sp-val">{renderSupplierCell(f.key, record)}</div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-
-            {extraFields.length > 0 && (
-              <div className="sp-section">
-                <div className="sp-section-title">Additional Info</div>
-                <div className="sp-grid">
-                  {extraFields.map((f) => (
-                    <div key={f.key} className={`sp-field${supplierViewFieldSpanClass(f.key)}`}>
-                      <span className="sp-label">{f.label}</span>
-                      <div className="sp-val">{renderSupplierCell(f.key, record)}</div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+
+                {extraFields.length > 0 && (
+                  <div className="sp-section">
+                    <div className="sp-section-title">Additional Info</div>
+                    <div className="sp-grid">
+                      {extraFields.map((f) => (
+                        <div key={f.key} className={`sp-field${supplierViewFieldSpanClass(f.key)}`}>
+                          <span className="sp-label">{f.label}</span>
+                          <div className="sp-val">{renderSupplierCell(f.key, record)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          <div className={`sp-scroll-hint${showHint ? '' : ' hidden'}`}>
-            <ChevronDown size={16} />
-            Scroll untuk edit data supplier
-          </div>
-
-          <div className="sp-edit-divider" ref={editRef} />
-
-          <div className="sp-edit-panel">
-            <div className="sp-edit-header">
-              <h3>Edit Supplier</h3>
-              <p>Ubah data per section, lalu simpan perubahan ke registry.</p>
-            </div>
-
-            <form className="sp-edit-form" onSubmit={handleSave}>
-              {EDIT_SECTIONS.map((section) => {
-                const sectionFields = fieldsByKeys(fields, section.keys);
-                if (!sectionFields.length) return null;
-                return (
-                  <div key={section.title} className="sp-edit-section">
-                    <div className="sp-section-title">{section.title}</div>
-                    <div className="sp-edit-grid">
-                      {sectionFields.map((f) => renderEditField(f))}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {extraEditFields.length > 0 && (
-                <div className="sp-edit-section">
-                  <div className="sp-section-title">Additional Info</div>
-                  <div className="sp-edit-grid">
-                    {extraEditFields.map((f) => renderEditField(f))}
-                  </div>
-                </div>
-              )}
-
-              <div className="sp-edit-actions">
+              <div className="sp-edit-actions sp-view-actions">
                 <button
                   type="button"
                   className="sp-btn sp-btn-danger"
@@ -351,14 +331,73 @@ export default function SupplierProfileModal({
                   Delete
                 </button>
                 <button type="button" className="sp-btn sp-btn-ghost" onClick={onClose}>
-                  Cancel
+                  Tutup
                 </button>
-                <button type="submit" className="sp-btn sp-btn-primary" disabled={saving}>
-                  {saving ? 'Saving…' : 'Save Changes'}
+                <button type="button" className="sp-btn sp-btn-primary" onClick={startEditing}>
+                  <Pencil size={14} />
+                  Edit Supplier
                 </button>
               </div>
-            </form>
-          </div>
+            </>
+          ) : (
+            <div className="sp-edit-panel">
+              <div className="sp-edit-header">
+                <h3>Edit Supplier</h3>
+                <p>Ubah data per section, lalu simpan perubahan ke registry.</p>
+              </div>
+
+              <form className="sp-edit-form" onSubmit={handleSave}>
+                {EDIT_SECTIONS.map((section) => {
+                  const sectionFields = fieldsByKeys(fields, section.keys);
+                  if (!sectionFields.length) return null;
+                  return (
+                    <div key={section.title} className="sp-edit-section">
+                      <div className="sp-section-title">{section.title}</div>
+                      <div className="sp-edit-grid">
+                        {sectionFields.map((f) => renderEditField(f))}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {extraEditFields.length > 0 && (
+                  <div className="sp-edit-section">
+                    <div className="sp-section-title">Additional Info</div>
+                    <div className="sp-edit-grid">
+                      {extraEditFields.map((f) => renderEditField(f))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="sp-edit-actions">
+                  <button
+                    type="button"
+                    className="sp-btn sp-btn-danger"
+                    onClick={async () => {
+                      if (!confirm('Hapus supplier ini?')) return;
+                      await onDelete(record.id);
+                      onClose();
+                    }}
+                    disabled={saving}
+                  >
+                    <Trash2 size={14} />
+                    Delete
+                  </button>
+                  <button
+                    type="button"
+                    className="sp-btn sp-btn-ghost"
+                    onClick={() => setEditing(false)}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="sp-btn sp-btn-primary" disabled={saving}>
+                    {saving ? 'Saving…' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     </div>

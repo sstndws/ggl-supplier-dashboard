@@ -456,6 +456,11 @@
   border-top: 1px solid rgba(139, 26, 26, 0.1);
 }
 
+.sp-view-actions {
+  margin: 4px 28px 0;
+  padding: 16px 0 28px;
+}
+
 .sp-btn {
   display: inline-flex;
   align-items: center;
