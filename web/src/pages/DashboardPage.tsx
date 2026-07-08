@@ -125,14 +125,16 @@ export default function DashboardPage() {
 
   async function handleAddSave(data: Record<string, string>) {
     try {
-      await api.saveRecord({
+      const payload = {
         id: '',
         site: currentSite,
         year: currentYear,
         ...data,
-      } as SupplierRecord);
+      } as SupplierRecord;
+      const saved = await api.saveRecord(payload);
+      const newRecord = { ...payload, ...saved } as SupplierRecord;
+      setRecords((prev) => [...prev, newRecord]);
       setAddModalOpen(false);
-      loadDashboard();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to save supplier.');
     }
@@ -141,14 +143,16 @@ export default function DashboardPage() {
   async function handleProfileSave(data: Record<string, string>) {
     if (!profileRecord) return;
     try {
-      await api.saveRecord({
+      const payload = {
         id: profileRecord.id,
         site: currentSite,
         year: currentYear,
         ...data,
-      } as SupplierRecord);
+      } as SupplierRecord;
+      const saved = await api.saveRecord(payload);
+      const updated = { ...profileRecord, ...payload, ...saved } as SupplierRecord;
+      setRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
       setProfileRecord(null);
-      loadDashboard();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to save changes.');
     }
@@ -158,8 +162,8 @@ export default function DashboardPage() {
     if (!confirm('Delete this supplier?')) return;
     try {
       await api.deleteRecord(id);
+      setRecords((prev) => prev.filter((r) => r.id !== id));
       setProfileRecord(null);
-      loadDashboard();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete supplier.');
     }
