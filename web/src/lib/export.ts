@@ -7,21 +7,104 @@ export function exportableFields(schema: FieldSchema[]) {
   return schema.filter((f) => !SKIP_KEYS.has(f.key));
 }
 
-export function downloadCsv(
-  records: SupplierRecord[],
-  columns: FieldSchema[],
-  filename: string,
-) {
-  const lines = [
-    columns.map((c) => `"${c.label.replace(/"/g, '""')}"`).join(','),
-    ...records.map((r) =>
-      columns
-        .map((c) => `"${(r[c.key] || '').replace(/"/g, '""')}"`)
-        .join(','),
-    ),
-  ];
-  const blob = new Blob(['\uFEFF' + lines.join('\n')], {
-    type: 'text/csv;charset=utf-8;',
+function sanitizeSheetName(name: string): string {
+  const cleaned = name.replace(/[\\/?*[\]:]/g, ' ').trim();
+  return (cleaned || 'Registry').slice(0, 31);
+}
+
+function isNumericValue(value: string): boolean {
+  return /^-?\d+(\.\d+)?$/.test(value.trim());
+}
+
+export async function downloadExcel({
+  records,
+  columns,
+  filename,
+  sheetName,
+}: {
+  records: SupplierRecord[];
+  columns: FieldSchema[];
+  filename: string;
+  sheetName: string;
+}) {
+  const { default: ExcelJS } = await import('exceljs');
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'GGL Dashboard';
+  workbook.created = new Date();
+
+  const sheet = workbook.addWorksheet(sanitizeSheetName(sheetName), {
+    views: [{ state: 'frozen', ySplit: 1 }],
+  });
+
+  sheet.columns = columns.map((c) => {
+    const headerLen = c.label.length;
+    const dataLen = records.reduce(
+      (max, r) => Math.max(max, String(r[c.key] ?? '').length),
+      0,
+    );
+    const width = Math.min(48, Math.max(12, Math.max(headerLen, dataLen) + 2));
+    return { key: c.key, width };
+  });
+
+  const headerRow = sheet.getRow(1);
+  headerRow.values = columns.map((c) => c.label);
+  headerRow.height = 26;
+  headerRow.eachCell((cell) => {
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF8B1A1A' },
+    };
+    cell.font = {
+      name: 'Calibri',
+      size: 11,
+      bold: true,
+      color: { argb: 'FFFFFFFF' },
+    };
+    cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+    cell.border = {
+      top: { style: 'thin', color: { argb: 'FF6D1414' } },
+      bottom: { style: 'thin', color: { argb: 'FF6D1414' } },
+      left: { style: 'thin', color: { argb: 'FF6D1414' } },
+      right: { style: 'thin', color: { argb: 'FF6D1414' } },
+    };
+  });
+
+  records.forEach((record, index) => {
+    const row = sheet.addRow(
+      columns.map((c) => {
+        const raw = String(record[c.key] ?? '').trim();
+        if (c.type === 'number' && isNumericValue(raw)) return Number(raw);
+        return raw;
+      }),
+    );
+    row.height = 18;
+    const zebra = index % 2 === 1;
+    row.eachCell((cell) => {
+      if (zebra) {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFFBF6F6' },
+        };
+      }
+      cell.font = { name: 'Calibri', size: 10, color: { argb: 'FF2A1010' } };
+      cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: false };
+      cell.border = {
+        bottom: { style: 'thin', color: { argb: 'FFECE0E0' } },
+        right: { style: 'thin', color: { argb: 'FFF2EAEA' } },
+      };
+    });
+  });
+
+  sheet.autoFilter = {
+    from: { row: 1, column: 1 },
+    to: { row: 1, column: columns.length },
+  };
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

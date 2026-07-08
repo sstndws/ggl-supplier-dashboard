@@ -20,7 +20,7 @@ import { DEFAULT_VISIBLE_KEYS } from '@/types';
 import {
   Columns3,
   Eraser,
-  Download,
+  FileSpreadsheet,
   FileText,
   Loader2,
   Plus,
@@ -58,7 +58,7 @@ export default function DashboardPage() {
   const [profileRecord, setProfileRecord] = useState<SupplierRecord | null>(null);
   const [siteModalOpen, setSiteModalOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
-  const [exportMode, setExportMode] = useState<'pdf' | 'csv'>('pdf');
+  const [exportMode, setExportMode] = useState<'pdf' | 'excel'>('pdf');
   const colMenuRef = useRef<HTMLDivElement>(null);
 
   const loadDashboard = useCallback(async () => {
@@ -322,12 +322,12 @@ export default function DashboardPage() {
                 type="button"
                 className="registry-btn registry-btn--export"
                 onClick={() => {
-                  setExportMode('csv');
+                  setExportMode('excel');
                   setExportOpen(true);
                 }}
               >
-                <Download size={14} />
-                Export CSV
+                <FileSpreadsheet size={14} />
+                Export Excel
               </button>
 
               <button

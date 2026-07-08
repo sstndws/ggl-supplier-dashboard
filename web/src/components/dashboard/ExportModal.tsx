@@ -1,6 +1,6 @@
-import { downloadCsv, exportableFields, openCorporatePdf } from '@/lib/export';
+import { downloadExcel, exportableFields, openCorporatePdf } from '@/lib/export';
 import type { FieldSchema, SupplierRecord, TableFilters } from '@/types';
-import { Download, FileText, X } from 'lucide-react';
+import { FileSpreadsheet, FileText, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 export default function ExportModal({
@@ -16,7 +16,7 @@ export default function ExportModal({
   initialKeys,
 }: {
   open: boolean;
-  mode: 'pdf' | 'csv';
+  mode: 'pdf' | 'excel';
   onClose: () => void;
   schema: FieldSchema[];
   records: SupplierRecord[];
@@ -28,10 +28,12 @@ export default function ExportModal({
 }) {
   const fields = useMemo(() => exportableFields(schema), [schema]);
   const [selected, setSelected] = useState<Set<string>>(() => new Set(initialKeys));
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setSelected(new Set(initialKeys));
+    setExporting(false);
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
@@ -66,17 +68,26 @@ export default function ExportModal({
     });
   }
 
-  function handleExport() {
-    if (!selectedFields.length) return;
+  async function handleExport() {
+    if (!selectedFields.length || exporting) return;
     const stamp = new Date().toISOString().slice(0, 10);
     const safeSite = siteId.replace(/[^a-zA-Z0-9_-]/g, '');
 
-    if (mode === 'csv') {
-      downloadCsv(
-        records,
-        selectedFields,
-        `GGL_Supplier_Registry_${safeSite}_${year}_${stamp}.csv`,
-      );
+    if (mode === 'excel') {
+      setExporting(true);
+      try {
+        await downloadExcel({
+          records,
+          columns: selectedFields,
+          filename: `GGL_Supplier_Registry_${safeSite}_${year}_${stamp}.xlsx`,
+          sheetName: `${siteId} ${year}`,
+        });
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Gagal membuat file Excel.');
+        setExporting(false);
+        return;
+      }
+      setExporting(false);
     } else {
       openCorporatePdf({
         records,
@@ -102,7 +113,7 @@ export default function ExportModal({
       <div className="export-modal">
         <div className="export-modal__head">
           <div>
-            <h2>{mode === 'pdf' ? 'Export PDF' : 'Export CSV'}</h2>
+            <h2>{mode === 'pdf' ? 'Export PDF' : 'Export Excel'}</h2>
             <p>
               Pilih kolom yang ingin disertakan · {records.length} baris · {siteName} {year}
             </p>
@@ -144,11 +155,15 @@ export default function ExportModal({
           <button
             type="button"
             className="sp-btn sp-btn-primary"
-            disabled={noneSelected}
+            disabled={noneSelected || exporting}
             onClick={handleExport}
           >
-            {mode === 'pdf' ? <FileText size={15} /> : <Download size={15} />}
-            {mode === 'pdf' ? 'Generate PDF' : 'Download CSV'}
+            {mode === 'pdf' ? <FileText size={15} /> : <FileSpreadsheet size={15} />}
+            {mode === 'pdf'
+              ? 'Generate PDF'
+              : exporting
+                ? 'Menyiapkan…'
+                : 'Download Excel'}
           </button>
         </div>
       </div>
